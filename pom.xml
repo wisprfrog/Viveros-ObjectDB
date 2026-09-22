@@ -51,7 +51,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>org.vivero.Main</mainClass>
+                            <mainClass>org.viverobd.Main</mainClass>
                         </configuration>
                     </execution>
                 </executions>
