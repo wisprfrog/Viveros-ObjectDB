@@ -83,11 +83,10 @@ public class ZonaPlanta implements Serializable{
         this.zonap_zona = zonap_zona;
     }
 
-    public Planta getZonap_planta() {
-        return zonap_planta;
-    }
+    public void formZonap_zona(Zona zona) { this.zonap_zona = zona; }
+    public void dropZonap_zona() { this.zonap_zona = null; }
 
-    public void setZonap_planta(Planta zonap_planta) {
-        this.zonap_planta = zonap_planta;
-    }
+    public Planta getZonap_planta() { return zonap_planta; }
+    public void formZonap_planta(Planta planta) { this.zonap_planta = planta; }
+    public void dropZonap_planta() { this.zonap_planta = null; }
 }

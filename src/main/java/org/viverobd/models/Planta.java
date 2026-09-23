@@ -2,8 +2,8 @@ package org.viverobd.models;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Set;
 import jakarta.persistence.*;
+import java.util.*;
 
 @Entity
 public class Planta implements Serializable{
@@ -21,7 +21,7 @@ public class Planta implements Serializable{
 
     @OneToMany
     @JoinColumn(name="zonap_pla", nullable = false)
-    private Set<ZonaPlanta> pla_zonap;
+    private List<ZonaPlanta> pla_zonap = new ArrayList<>();
 
     public Planta(){}
 
@@ -71,9 +71,13 @@ public class Planta implements Serializable{
         return pla_cuidados;
     }
 
-    public Producto getPla_producto() {
+    public Producto getPla_prod() {
         return pla_producto;
     }
-    public void formPla_producto(Producto producto){this.pla_producto = producto;}
-    public void dropPla_producto(){this.pla_producto = null;}
+    public void formPla_prod(Producto producto){this.pla_producto = producto;}
+    public void dropPla_prod(){this.pla_producto = null;}
+
+    public List<ZonaPlanta> getPla_zonap() { return pla_zonap; }
+    public void formPla_zonap(ZonaPlanta zonap) { this.pla_zonap.add(zonap); }
+    public void dropPla_zonap(ZonaPlanta zonap) { this.pla_zonap.remove(zonap); }
 }

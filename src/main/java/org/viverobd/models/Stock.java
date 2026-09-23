@@ -51,11 +51,10 @@ public class Stock implements Serializable{
         return stock_producto;
     }
 
-    public void setStock_zona(Zona stock_zona) {
-        this.stock_zona = stock_zona;
-    }
+    public void formStock_producto(Producto producto) { this.stock_producto = producto; }
+    public void dropStock_producto() { this.stock_producto = null; }
 
-    public Zona getStock_zona() {
-        return stock_zona;
-    }
+    public Zona getStock_zona() { return stock_zona; }
+    public void formStock_zona(Zona zona) { this.stock_zona = zona; }
+    public void dropStock_zona() { this.stock_zona = null; }
 }

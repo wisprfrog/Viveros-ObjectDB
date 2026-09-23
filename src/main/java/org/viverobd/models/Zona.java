@@ -2,6 +2,7 @@ package org.viverobd.models;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,14 @@ public class Zona implements Serializable{
     @JoinColumn(name = "viv_zona", nullable = false)
         private Vivero zona_viv;
 
+    @OneToMany
+    @JoinColumn(name="zonap_zona", nullable = false)
+    private List<ZonaPlanta> zona_zonap = new ArrayList<>();
+
+    @OneToMany
+    @JoinColumn(name="stock_zona", nullable = false)
+        private List<Stock> zona_stock = new ArrayList<>();
+
     public Zona() {}
 
     public Zona(String zona_nombre, float zona_superficie, TipoZona zona_tipo) {
@@ -63,21 +72,11 @@ public class Zona implements Serializable{
     public void formZona_viv(Vivero zona_viv) { this.zona_viv = zona_viv; }
     public void dropZona_viv() { this.zona_viv = null; }
 
-    //TODO: Agregar relacion con ZonaPlantas
-    @OneToMany
-    @JoinColumn(name="zonap_zona", nullable = false)
-    private Set<ZonaPlanta> zona_zonap;
-
-    public Set<ZonaPlanta> getZona_zonap() {return zona_zonap;}
+    public List<ZonaPlanta> getZona_zonap() {return zona_zonap;}
     public void formZona_zonap(ZonaPlanta zonap){this.zona_zonap.add(zonap);}
     public void dropZona_zonap(ZonaPlanta zonap){this.zona_zonap.remove(zonap);}
 
-    //TODO: Agregar relacion con StockProductos
-    @OneToMany
-    @JoinColumn(name="stock_zona", nullable = false)
-        private Set<Stock> zona_stock;
-
-    public Set<Stock> getZona_stock() {return zona_stock;}
+    public List<Stock> getZona_stock() {return zona_stock;}
     public void formZona_stock(Stock stock){this.zona_stock.add(stock);}
     public void dropZona_stock(Stock stock){this.zona_stock.remove(stock);}
 }

@@ -2,7 +2,7 @@ package org.viverobd.models;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Set;
+import java.util.*;
 
 import jakarta.persistence.*;
 
@@ -19,7 +19,7 @@ public class Vivero implements Serializable{
 
     @OneToMany
     @JoinColumn(name = "zona_viv", nullable = false)
-        private Set<Zona> viv_zona;
+        private List<Zona> viv_zona = new ArrayList<>();
 
     public Vivero() {}
 
@@ -38,7 +38,7 @@ public class Vivero implements Serializable{
     public void formViv_emp(Empleado viv_emp) { this.viv_emp = viv_emp; }
     public void dropViv_emp() { this.viv_emp = null; }
 
-    public Set<Zona> getViv_zona() { return viv_zona; }
+    public List<Zona> getViv_zona() { return viv_zona; }
     public void formViv_zona(Zona viv_zona) { this.viv_zona.add(viv_zona); }
     public void dropViv_zona(Zona viv_zona) { this.viv_zona.remove(viv_zona); }
 }

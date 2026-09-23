@@ -20,7 +20,7 @@ public class Empleado implements Serializable {
 
     @OneToMany
     @JoinColumn(name = "zonae_emp", nullable = false)
-        private Set<ZonaEmpleado> emp_zonae;
+        private List<ZonaEmpleado> emp_zonae = new ArrayList<>();
 
     public Empleado() {}
 
@@ -43,7 +43,7 @@ public class Empleado implements Serializable {
     public void formEmp_viv(Vivero emp_viv) { this.emp_viv = emp_viv; }
     public void dropEmp_viv() { this.emp_viv = null; }
 
-    public Set<ZonaEmpleado> getEmp_zonae() { return emp_zonae; }
+    public List<ZonaEmpleado> getEmp_zonae() { return emp_zonae; }
     public void formEmp_zonae(ZonaEmpleado emp_zonae) { this.emp_zonae.add(emp_zonae); }
     public void dropEmp_zonae(ZonaEmpleado emp_zonae) { this.emp_zonae.remove(emp_zonae); }
 }

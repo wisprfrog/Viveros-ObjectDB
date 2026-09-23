@@ -2,7 +2,7 @@ package org.viverobd.models;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Set;
+import java.util.*;
 import jakarta.persistence.*;
 
 @Entity
@@ -28,11 +28,11 @@ public class Producto implements Serializable {
 
     @OneToMany
     @JoinColumn(name = "pla_producto", nullable=false)
-        private Set<Planta> pro_planta;
+        private List<Planta> pro_planta = new ArrayList<>();
 
     @OneToMany
     @JoinColumn(name = "stock_producto", nullable = false)
-    private Set<Stock> prod_stock;
+    private List<Stock> prod_stock = new ArrayList<>();
 
     public Producto(){}
 
@@ -76,11 +76,11 @@ public class Producto implements Serializable {
         this.pro_tipo = pro_tipo;
     }
 
-    public Set<Planta> getPro_planta(){return pro_planta;}
+    public List<Planta> getPro_planta(){return pro_planta;}
     public void formPro_planta(Planta planta){this.pro_planta.add(planta);}
     public void dropPro_planta(Planta planta){this.pro_planta.remove(planta);}
 
-    public Set<Stock> getProd_stock() {return prod_stock;}
+    public List<Stock> getProd_stock() {return prod_stock;}
     public void formPro_stock(Stock stock){this.prod_stock.add(stock);}
     public void dropPro_stock(Stock stock){this.prod_stock.remove(stock);}
 }

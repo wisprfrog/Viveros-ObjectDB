@@ -20,7 +20,7 @@ public class ZonaEmpleado implements Serializable{
 
     @OneToMany
     @JoinColumn(name = "zona_zonae", nullable = false)
-        private Set<Zona> zonae_zona;
+        private List<Zona> zonae_zona = new ArrayList<>();
 
     public ZonaEmpleado() {}
 
@@ -42,4 +42,8 @@ public class ZonaEmpleado implements Serializable{
     public Empleado getZonae_emp() { return zonae_emp; }
     public void formZonae_emp(Empleado zonae_emp) { this.zonae_emp = zonae_emp; }
     public void dropZonae_emp() { this.zonae_emp = null; }
+
+    public List<Zona> getZonae_zona() { return zonae_zona; }
+    public void formZonae_zona(Zona zonae_zona) { this.zonae_zona.add(zonae_zona); }
+    public void dropZonae_zona(Zona zonae_zona) { this.zonae_zona.remove(zonae_zona); }
 }
