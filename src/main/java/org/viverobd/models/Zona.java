@@ -18,7 +18,9 @@ public class Zona implements Serializable{
         zona_aclimatacion("Zona de Aclimatacion"),
         zona_preparacion_sustrato("Zona de Preparacion de Sustrato"),
         zona_almacenamiento("Zona de Almacenamiento"),
-        oficina_administrativa("Oficina Administrativa");
+        oficina_administrativa("Oficina Administrativa"),
+        zona_regadio("Zona de Regadio"),
+        zona_climatizada("Zona Climatizada");
 
         public final String nombre;
 

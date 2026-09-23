@@ -16,6 +16,10 @@ public class PoblarBD {
         try {
             em.getTransaction().begin();
 
+            long currentTime = System.currentTimeMillis();
+            long threeMonthsAgo = currentTime - (90L * 24 * 60 * 60 * 1000);
+            long twoYearsAgo = currentTime - (2L * 365 * 24 * 60 * 60 * 1000);
+
             // 1. Crear 7 Viveros
             List<Vivero> viveros = new ArrayList<>();
             for (int i = 1; i <= 7; i++) {
@@ -35,10 +39,14 @@ public class PoblarBD {
                 em.persist(e);
             }
 
-            // 3. Crear 7 Zonas (una por vivero para cumplir con el mínimo de 7 objetos)
+            // 3. Crear Zonas
             List<Zona> zonas = new ArrayList<>();
+            // Zonas específicas para cumplir con las consultas
+            String[] nombresZonas = {"Zona Regadio A", "Zona Climatizada B", "Zona Almacen C", "Zona Siembra D", "Zona Crecimiento E", "Zona Aclimatacion F", "Zona Sustrato G"};
+            Zona.TipoZona[] tiposZonas = {Zona.TipoZona.zona_regadio, Zona.TipoZona.zona_climatizada, Zona.TipoZona.zona_almacenamiento, Zona.TipoZona.zona_siembra, Zona.TipoZona.zona_crecimiento, Zona.TipoZona.zona_aclimatacion, Zona.TipoZona.zona_preparacion_sustrato};
+            
             for (int i = 1; i <= 7; i++) {
-                Zona z = new Zona("Zona " + i, 100.0f * i, Zona.TipoZona.values()[i % Zona.TipoZona.values().length]);
+                Zona z = new Zona(nombresZonas[i-1], 100.0f * i, tiposZonas[i-1]);
                 Vivero v = viveros.get(i - 1);
                 z.formZona_viv(v);
                 v.formViv_zona(z);
@@ -55,10 +63,12 @@ public class PoblarBD {
                 em.persist(p);
             }
 
-            // 5. Crear 7 Plantas (asociadas a los primeros 4 productos tipo planta y otros nuevos si es necesario)
+            // 5. Crear 7 Plantas
             List<Planta> plantas = new ArrayList<>();
             for (int i = 1; i <= 7; i++) {
-                Planta pla = new Planta("Planta " + i, 20.0, 60.0, 80.0, "Cuidados planta " + i);
+                // Planta 1 y 2 serán de clima frío (pla_clima bajo, ej: 5.0)
+                double clima = (i <= 2) ? 5.0 : 25.0;
+                Planta pla = new Planta("Planta " + i, clima, 60.0, 80.0, "Cuidados planta " + i);
                 // Asociar con un producto de tipo planta (usamos los primeros 4 de forma cíclica)
                 Producto p = productos.get((i - 1) % 4);
                 pla.formPla_prod(p);
@@ -67,33 +77,56 @@ public class PoblarBD {
                 em.persist(pla);
             }
 
-            // 6. Relaciones: ZonaEmpleado (Asignar empleados a zonas)
+            // 6. Relaciones: ZonaEmpleado (Asignar empleados a zonas e historial)
             for (int i = 1; i <= 7; i++) {
-                ZonaEmpleado ze = new ZonaEmpleado("ZE" + i, new Timestamp(System.currentTimeMillis()), "08:00");
+                // Registro actual
+                ZonaEmpleado ze = new ZonaEmpleado("ZE-ACT-" + i, new Timestamp(currentTime), null, "08:00");
                 Empleado e = empleados.get(i - 1);
                 Zona z = zonas.get(i - 1);
                 
                 ze.formZonae_emp(e);
                 e.formEmp_zonae(ze);
-                
                 z.formZona_zonae(ze);
                 ze.formZonae_zona(z);
-                
                 em.persist(ze);
+
+                // Registro histórico (hace un año, para consulta 6)
+                if (i == 3) { // Empleado 3 estuvo en Zona 3 (Almacén) hace un año
+                     ZonaEmpleado zeH = new ZonaEmpleado("ZE-HIST-" + i, new Timestamp(twoYearsAgo + 1000), new Timestamp(currentTime - 100000), "09:00");
+                     zeH.formZonae_emp(e);
+                     e.formEmp_zonae(zeH);
+                     z.formZona_zonae(zeH);
+                     zeH.formZonae_zona(z);
+                     em.persist(zeH);
+                }
             }
 
-            // 7. Relaciones: ZonaPlanta (Ubicación de plantas en zonas)
+            // 7. Relaciones: ZonaPlanta (Ubicación de plantas en zonas y registro de temperatura histórico)
+            int zpId = 1;
             for (int i = 1; i <= 7; i++) {
-                ZonaPlanta zp = new ZonaPlanta(i, 22.5, 55.0, new java.util.Date(), new Time(System.currentTimeMillis()));
                 Planta pla = plantas.get(i - 1);
                 Zona z = zonas.get(i - 1);
-                
+
+                // Registro actual
+                ZonaPlanta zp = new ZonaPlanta(zpId++, 22.5, 55.0, new java.util.Date(currentTime), new Time(currentTime));
                 zp.formZonap_planta(pla);
                 pla.formPla_zonap(zp);
                 zp.formZonap_zona(z);
                 z.formZona_zonap(zp);
-                
                 em.persist(zp);
+
+                // Registros históricos de temperatura (últimos 3 meses, para consulta 4)
+                if (z.getZona_tipo() == Zona.TipoZona.zona_climatizada) {
+                    for (int m = 1; m <= 3; m++) {
+                        long timeOffset = currentTime - (m * 30L * 24 * 60 * 60 * 1000);
+                        ZonaPlanta zpH = new ZonaPlanta(zpId++, 18.0 + m, 50.0, new java.util.Date(timeOffset), new Time(timeOffset));
+                        zpH.formZonap_planta(pla);
+                        pla.formPla_zonap(zpH);
+                        zpH.formZonap_zona(z);
+                        z.formZona_zonap(zpH);
+                        em.persist(zpH);
+                    }
+                }
             }
 
             // 8. Relaciones: Stock (Productos en zonas)
