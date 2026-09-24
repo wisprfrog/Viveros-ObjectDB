@@ -11,6 +11,7 @@ public class Vivero implements Serializable{
     @Serial private static final long serialVersionUID = 1L;
 
     @Id private String viv_telefono;
+    private String viv_nombre;
     private String viv_direccion;
 
     @OneToOne
@@ -23,13 +24,17 @@ public class Vivero implements Serializable{
 
     public Vivero() {}
 
-    public Vivero(String viv_telefono, String viv_direccion) {
+    public Vivero(String viv_telefono, String viv_nombre, String viv_direccion) {
         this.viv_telefono = viv_telefono;
+        this.viv_nombre = viv_nombre;
         this.viv_direccion = viv_direccion;
     }
 
     public String getViv_telefono() { return viv_telefono; }
     public void setViv_telefono(String viv_telefono) { this.viv_telefono = viv_telefono; }
+
+    public String getViv_nombre() { return viv_nombre; }
+    public void setViv_nombre(String viv_nombre) { this.viv_nombre = viv_nombre; }
 
     public String getViv_direccion() { return viv_direccion; }
     public void setViv_direccion(String viv_direccion) { this.viv_direccion = viv_direccion; }

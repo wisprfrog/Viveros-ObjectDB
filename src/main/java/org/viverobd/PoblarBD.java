@@ -23,7 +23,7 @@ public class PoblarBD {
             // 1. Crear 7 Viveros
             List<Vivero> viveros = new ArrayList<>();
             for (int i = 1; i <= 7; i++) {
-                Vivero v = new Vivero("90000000" + i, "Calle Falsa " + i);
+                Vivero v = new Vivero("90000000" + i, "Vivero "+i, "Calle Falsa " + i);
                 viveros.add(v);
                 em.persist(v);
             }
