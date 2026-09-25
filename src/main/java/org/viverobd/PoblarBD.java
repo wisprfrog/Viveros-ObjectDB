@@ -60,15 +60,22 @@ public class PoblarBD {
                 em.persist(z);
             }
 
-            // 4. Crear 10 Productos
+            // 4. Crear Productos
             List<Producto> productos = new ArrayList<>();
+            // Crear 10 productos de tipo planta (para las 10 plantas)
             for (int i = 1; i <= 10; i++) {
-                Producto.TipoProducto tipo;
-                if (i <= 6) tipo = Producto.TipoProducto.tipo_planta;
-                else if (i <= 8) tipo = Producto.TipoProducto.tipo_accesorio;
-                else tipo = Producto.TipoProducto.tipo_decoracion;
-
-                Producto p = new Producto("PROD" + i, "Descripcion Producto " + i, 10.5f * i, tipo);
+                Producto p = new Producto("PROD-PLA" + i, "Descripcion Planta " + i, 10.5f * i, Producto.TipoProducto.tipo_planta);
+                productos.add(p);
+                em.persist(p);
+            }
+            // Crear algunos productos extra de otros tipos
+            for (int i = 1; i <= 2; i++) {
+                Producto p = new Producto("PROD-ACC" + i, "Accesorio " + i, 5.0f * i, Producto.TipoProducto.tipo_accesorio);
+                productos.add(p);
+                em.persist(p);
+            }
+            for (int i = 1; i <= 2; i++) {
+                Producto p = new Producto("PROD-DEC" + i, "Decoracion " + i, 15.0f * i, Producto.TipoProducto.tipo_decoracion);
                 productos.add(p);
                 em.persist(p);
             }
@@ -82,8 +89,8 @@ public class PoblarBD {
                 double clima = (i == 1 || i == 2 || i == 8) ? 5.0 : 25.0;
                 Planta.TipoPlanta tipoAleatorio = tiposPlantas[random.nextInt(tiposPlantas.length)];
                 Planta pla = new Planta("Planta " + i, clima, 60.0, 80.0, "Cuidados planta " + i, tipoAleatorio);
-                // Asociar con un producto de tipo planta (usamos los primeros 6 de forma cíclica)
-                Producto p = productos.get((i - 1) % 6);
+                // Asociar con un producto de tipo planta (relación 1:1, los primeros 10 son plantas)
+                Producto p = productos.get(i - 1);
                 pla.formPla_prod(p);
                 p.formPro_planta(pla);
                 plantas.add(pla);
