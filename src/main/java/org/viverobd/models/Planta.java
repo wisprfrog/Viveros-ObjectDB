@@ -9,11 +9,26 @@ import java.util.*;
 public class Planta implements Serializable{
     @Serial private static final long serialVersionUID=1L;
 
+    public enum TipoPlanta {
+        planta_ornamental("Planta Ornamental"),
+        arbol_frutal("Arbol Frutal"),
+        planta_medicinal("Planta Medicinal"),
+        planta_aromatica("Planta Aromatica"),
+        planta_agricola("Planta Agricola"),
+        hortaliza("Hortaliza"),
+        planta_acuatica("Planta Acuatica"),;
+
+        public final String nombre;
+
+        TipoPlanta(String nombre){ this.nombre = nombre; }
+    }
+
     @Id private String pla_nombre;
     private double pla_clima;
     private double pla_humedad;
     private double pla_luz;
     private String pla_cuidados;
+    private TipoPlanta pla_tipo;
 
     @ManyToOne
     @JoinColumn(name="pro_planta", nullable = false)
@@ -25,12 +40,13 @@ public class Planta implements Serializable{
 
     public Planta(){}
 
-    public Planta(String nom, double clima, double humedad, double luz, String cuidados){
+    public Planta(String nom, double clima, double humedad, double luz, String cuidados, TipoPlanta tipo){
         this.pla_nombre=nom;
         this.pla_clima = clima;
         this.pla_humedad=humedad;
         this.pla_luz=luz;
         this.pla_cuidados=cuidados;
+        this.pla_tipo=tipo;
     }
 
     public void setPla_nombre(String pla_nombre) {
@@ -66,10 +82,12 @@ public class Planta implements Serializable{
     public void setPla_cuidados(String pla_cuidados) {
         this.pla_cuidados = pla_cuidados;
     }
-
     public String getPla_cuidados() {
         return pla_cuidados;
     }
+
+    public void setPla_tipo(TipoPlanta pla_tipo) { this.pla_tipo = pla_tipo; }
+    public TipoPlanta getPla_tipo() { return pla_tipo; }
 
     public Producto getPla_prod() {
         return pla_producto;
