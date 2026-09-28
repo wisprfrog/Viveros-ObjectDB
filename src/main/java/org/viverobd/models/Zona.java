@@ -2,6 +2,10 @@ package org.viverobd.models;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -14,7 +18,9 @@ public class Zona implements Serializable{
         zona_aclimatacion("Zona de Aclimatacion"),
         zona_preparacion_sustrato("Zona de Preparacion de Sustrato"),
         zona_almacenamiento("Zona de Almacenamiento"),
-        oficina_administrativa("Oficina Administrativa");
+        oficina_administrativa("Oficina Administrativa"),
+        zona_regadio("Zona de Regadio"),
+        zona_climatizada("Zona Climatizada");
 
         public final String nombre;
 
@@ -34,6 +40,14 @@ public class Zona implements Serializable{
     @ManyToOne
     @JoinColumn(name = "viv_zona", nullable = false)
         private Vivero zona_viv;
+
+    @OneToMany
+    @JoinColumn(name="zonap_zona", nullable = false)
+    private List<ZonaPlanta> zona_zonap = new ArrayList<>();
+
+    @OneToMany
+    @JoinColumn(name="stock_zona", nullable = false)
+        private List<Stock> zona_stock = new ArrayList<>();
 
     public Zona() {}
 
@@ -60,7 +74,11 @@ public class Zona implements Serializable{
     public void formZona_viv(Vivero zona_viv) { this.zona_viv = zona_viv; }
     public void dropZona_viv() { this.zona_viv = null; }
 
-    //TODO: Agregar relacion con ZonaPlantas
+    public List<ZonaPlanta> getZona_zonap() {return zona_zonap;}
+    public void formZona_zonap(ZonaPlanta zonap){this.zona_zonap.add(zonap);}
+    public void dropZona_zonap(ZonaPlanta zonap){this.zona_zonap.remove(zonap);}
 
-    //TODO: Agregar relacion con StockProductos
+    public List<Stock> getZona_stock() {return zona_stock;}
+    public void formZona_stock(Stock stock){this.zona_stock.add(stock);}
+    public void dropZona_stock(Stock stock){this.zona_stock.remove(stock);}
 }
