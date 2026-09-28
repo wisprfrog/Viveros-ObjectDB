@@ -32,7 +32,7 @@ public class Planta implements Serializable{
 
     @ManyToOne
     @JoinColumn(name="pro_planta", nullable = false)
-        private Producto pla_producto;
+    private Producto pla_producto;
 
     @OneToMany
     @JoinColumn(name="zonap_pla", nullable = false)
