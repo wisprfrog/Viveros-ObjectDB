@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="795.0" prefWidth="1391.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.ProductoController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#7da78c" height="71.0" layoutX="30.0" layoutY="13.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 30; -fx-arc-width: 30;" width="1334.0" />
+      <Text fill="FLORALWHITE" layoutX="613.0" layoutY="68.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PRODUCTO" textAlignment="CENTER">
+         <font>
+            <Font name="Impact" size="52.0" />
+         </font>
+      </Text>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="456.0" layoutX="30.0" layoutY="94.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="404.0" />
+      <Text layoutX="47.0" layoutY="136.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PRODUCTO">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="precioProd" layoutX="47.0" layoutY="474.0" prefHeight="49.0" prefWidth="357.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+      <Text layoutX="48.0" layoutY="236.0" strokeType="OUTSIDE" strokeWidth="0.0" text="DESCRIPCIÓN">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="descProd" layoutX="47.0" layoutY="253.0" prefHeight="63.0" prefWidth="357.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+      <Text layoutX="44.0" layoutY="351.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TIPO">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <ChoiceBox fx:id="tipoProd" layoutX="44.0" layoutY="365.0" prefHeight="52.0" prefWidth="357.0" style="-fx-background-color: #FFFAF0; -fx-border-color: #E7E1B1; -fx-background-radius: 10; -fx-border-radius: 10;" />
+      <Text layoutX="45.0" layoutY="459.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PRECIO">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="nomProd" layoutX="47.0" layoutY="152.0" prefHeight="49.0" prefWidth="357.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+      <AnchorPane layoutX="30.0" layoutY="560.0" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="228.0" layoutY="-2.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="1040.0" />
+            <Text layoutX="23.0" layoutY="44.0" strokeType="OUTSIDE" strokeWidth="0.0" text="NOMBRE DE LA PLANTA">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <TextField fx:id="nombrePla" disable="true" layoutX="24.0" layoutY="56.0" prefHeight="49.0" prefWidth="358.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <Text layoutX="22.0" layoutY="151.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CLIMA (°C)">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <TextField fx:id="climaPla" disable="true" layoutX="23.0" layoutY="164.0" prefHeight="49.0" prefWidth="149.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <Text layoutX="202.0" layoutY="151.0" strokeType="OUTSIDE" strokeWidth="0.0" text="\% HUMEDAD">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <TextField fx:id="humedadPla" disable="true" layoutX="202.0" layoutY="164.0" prefHeight="49.0" prefWidth="181.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <Text layoutX="443.0" layoutY="44.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CUIDADOS">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <TextField fx:id="cuidadosPla" disable="true" layoutX="443.0" layoutY="56.0" prefHeight="49.0" prefWidth="580.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <Text layoutX="639.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TIPO DE PLANTA">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <ChoiceBox fx:id="tipoPla" disable="true" layoutX="639.0" layoutY="169.0" prefHeight="40.0" prefWidth="375.0" style="-fx-background-color: #FFFAF0; -fx-border-color: #E7E1B1; -fx-background-radius: 10; -fx-border-radius: 10;" />
+            <Text layoutX="443.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="LUZ">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <TextField fx:id="luzPla" disable="true" layoutX="444.0" layoutY="163.0" prefHeight="49.0" prefWidth="149.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+         </children>
+      </AnchorPane>
+      <TableView fx:id="tablaPro" layoutX="456.0" layoutY="177.0" prefHeight="371.0" prefWidth="614.0" />
+      <Button layoutX="1083.0" layoutY="176.0" mnemonicParsing="false" onAction="#agregarProd" prefHeight="88.0" prefWidth="281.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 20;" text="AGREGAR">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor>
+      </Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="72.0" layoutX="456.0" layoutY="94.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="908.0" />
+      <ChoiceBox fx:id="criterio" layoutX="641.0" layoutY="108.0" prefHeight="44.0" prefWidth="242.0" style="-fx-background-radius: 20; -fx-background-color: #FFFAF0; -fx-border-radius: 20;" />
+      <TextField fx:id="parametro" disable="true" layoutX="903.0" layoutY="105.0" prefHeight="49.0" prefWidth="281.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+      <Text layoutX="472.0" layoutY="138.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BUSCAR POR:">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <Button layoutX="1083.0" layoutY="291.0" mnemonicParsing="false" onAction="#modificarProd" prefHeight="88.0" prefWidth="281.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 20;" text="MODIFICAR">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1083.0" layoutY="409.0" mnemonicParsing="false" onAction="#eliminarProd" prefHeight="88.0" prefWidth="281.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 20;" text="ELIMINAR">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1084.0" layoutY="529.0" mnemonicParsing="false" onAction="#limpiarForm" prefHeight="88.0" prefWidth="281.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 20;" text="LIMPIAR">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1194.0" layoutY="104.0" mnemonicParsing="false" onAction="#buscarProd" prefHeight="52.0" prefWidth="155.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 20;" text="BUSCAR">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor>
+      </Button>
+      <AnchorPane fx:id="parametrosNumericos" layoutX="903.0" layoutY="92.0" prefHeight="72.0" prefWidth="281.0" visible="false">
+         <children>
+            <TextField fx:id="precioMin" layoutX="27.0" layoutY="32.0" prefHeight="40.0" prefWidth="86.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <TextField fx:id="precioMax" layoutX="157.0" layoutY="32.0" prefHeight="40.0" prefWidth="86.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;" />
+            <Text layoutX="47.0" layoutY="23.0" strokeType="OUTSIDE" strokeWidth="0.0" text="MIN">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+            <Text layoutX="177.0" layoutY="23.0" strokeType="OUTSIDE" strokeWidth="0.0" text="MAX">
+               <font>
+                  <Font name="Berlin Sans FB" size="26.0" />
+               </font>
+            </Text>
+         </children>
+      </AnchorPane>
+      <ChoiceBox fx:id="tipoProdBusqueda" layoutX="925.0" layoutY="108.0" prefHeight="44.0" prefWidth="221.0" style="-fx-background-color: #FFFAF0; -fx-border-color: #E7E1B1; -fx-background-radius: 10; -fx-border-radius: 10;" visible="false" />
+   </children>
+</AnchorPane>

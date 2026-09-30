@@ -19,9 +19,18 @@ public class Producto implements Serializable {
         TipoProducto(String nombre){
             this.nombre = nombre;
         }
+
+        public static TipoProducto fromNombre(String nombre) {
+            for (TipoProducto tipo : TipoProducto.values()) {
+                if (tipo.nombre.equalsIgnoreCase(nombre)) {
+                    return tipo;
+                }
+            }
+            return null;
+        }
     }
 
-    @Id private String id_producto;
+    @Id private String prod_nombre;
     private String pro_descripcion;
     private float pro_precio;
     private TipoProducto pro_tipo;
@@ -36,20 +45,20 @@ public class Producto implements Serializable {
 
     public Producto(){}
 
-    public Producto(String id, String desc, float precio, TipoProducto tipo){
-        this.id_producto=id;
+    public Producto(String nombre, String desc, float precio, TipoProducto tipo){
+        this.prod_nombre=nombre;
         this.pro_descripcion=desc;
         this.pro_tipo=tipo;
         this.pro_precio=precio;
 
     }
 
-    public void setId_producto(String id_producto) {
-        this.id_producto = id_producto;
+    public void setProd_nombre(String prod_nombre) {
+        this.prod_nombre = prod_nombre;
     }
 
-    public String getId_producto() {
-        return id_producto;
+    public String getProd_nombre() {
+        return prod_nombre;
     }
 
 
