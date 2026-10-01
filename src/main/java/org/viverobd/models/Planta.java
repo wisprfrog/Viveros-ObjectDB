@@ -40,7 +40,7 @@ public class Planta implements Serializable{
     private String pla_cuidados;
     private TipoPlanta pla_tipo;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name="pro_planta", nullable = false)
     private Producto pla_producto;
 

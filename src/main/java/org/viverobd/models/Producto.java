@@ -35,9 +35,9 @@ public class Producto implements Serializable {
     private float pro_precio;
     private TipoProducto pro_tipo;
 
-    @OneToMany
+    @OneToOne
     @JoinColumn(name = "pla_producto", nullable=false)
-        private List<Planta> pro_planta = new ArrayList<>();
+        private Planta pro_planta;
 
     @OneToMany
     @JoinColumn(name = "stock_producto", nullable = false)
@@ -85,9 +85,9 @@ public class Producto implements Serializable {
         this.pro_tipo = pro_tipo;
     }
 
-    public List<Planta> getPro_planta(){return pro_planta;}
-    public void formPro_planta(Planta planta){this.pro_planta.add(planta);}
-    public void dropPro_planta(Planta planta){this.pro_planta.remove(planta);}
+    public Planta getPro_planta(){return pro_planta;}
+    public void formPro_planta(Planta planta){this.pro_planta = planta;}
+    public void dropPro_planta(Planta planta){this.pro_planta = planta;}
 
     public List<Stock> getProd_stock() {return prod_stock;}
     public void formPro_stock(Stock stock){this.prod_stock.add(stock);}

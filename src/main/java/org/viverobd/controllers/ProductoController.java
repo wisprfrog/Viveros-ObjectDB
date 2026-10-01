@@ -38,6 +38,7 @@ public class ProductoController {
 
     private final String rutaDB = "./db/viverobd.odb";
 
+
     @FXML void initialize(){
         // Cargar los ChoiceBox con los valores de los Enums
         for (TipoProducto tipo : TipoProducto.values()) {
@@ -232,24 +233,69 @@ public class ProductoController {
     }
 
     @FXML void eliminarProd(ActionEvent event) {
-        if(camposCorrectos()){
-            Producto productoEliminar = construirProducto();
-
-            if("Plantas".equalsIgnoreCase(tipoProd.getValue())){
-                productoEliminar.formPro_planta(construirPlanta());
-            }
-
+        if (camposCorrectos()) {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
             EntityManager em = emf.createEntityManager();
 
-            ProductoDAO productoGenericDAO = new ProductoDAO(em, Producto.class);
-            productoGenericDAO.delete(productoEliminar);
+            try {
+                Producto productoEliminar = em.find(Producto.class, nomProd.getText());
 
-            limpiarForm(null);
-            em.close();
-            emf.close();
+                if (productoEliminar != null) {
+                    String mensaje = "¿Desea eliminar el producto: " + productoEliminar.getProd_nombre();
+
+                    if (productoEliminar.getPro_tipo() == TipoProducto.tipo_planta) {
+                        Planta planta = productoEliminar.getPro_planta();
+                        if (planta != null) {
+                            mensaje += "\nEste producto está asociado a la planta: " + planta.getPla_nombre();
+                            mensaje += "\nSi continúa, se eliminarán ambos registros.";
+                        }
+                    }
+
+                    // Mostrar confirmación al usuario
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Confirmar eliminación");
+                    alert.setHeaderText("Eliminar producto");
+                    alert.setContentText(mensaje);
+
+                    Optional<ButtonType> result = alert.showAndWait();
+
+                    if (result.isPresent() && result.get() == ButtonType.OK) {
+                        em.getTransaction().begin();
+
+                        // Si es planta, eliminar primero la planta
+                        if (productoEliminar.getPro_tipo() == TipoProducto.tipo_planta) {
+                            Planta planta = productoEliminar.getPro_planta();
+                            if (planta != null) {
+                                em.remove(planta);
+                            }
+                        }
+
+                        // Luego eliminar el producto
+                        em.remove(productoEliminar);
+
+                        em.getTransaction().commit();
+                        limpiarForm(null);
+                    } else {
+                        // El usuario canceló
+                        Alert cancelAlert = new Alert(Alert.AlertType.INFORMATION);
+                        cancelAlert.setTitle("Operación cancelada");
+                        cancelAlert.setHeaderText(null);
+                        cancelAlert.setContentText("No se eliminó ningún registro.");
+                        cancelAlert.showAndWait();
+                    }
+                }
+            } catch (Exception e) {
+                if (em.getTransaction().isActive()) {
+                    em.getTransaction().rollback();
+                }
+                e.printStackTrace();
+            } finally {
+                em.close();
+                emf.close();
+            }
         }
     }
+
 
     @FXML void modificarProd(ActionEvent event) {
         if (camposCorrectos()) {
