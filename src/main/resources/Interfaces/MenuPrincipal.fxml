@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Text?>
 
 
-<AnchorPane prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CONTROLLER_NAME">
+<AnchorPane prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.MenuController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c3d9b6" height="314.0" layoutX="28.0" layoutY="26.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="947.0" />
       <Text fill="#7da78c" layoutX="364.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="VIVERO">

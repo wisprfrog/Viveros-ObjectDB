@@ -4,6 +4,7 @@ import java.util.*;
 
 public interface GenericDAO<T> {
     enum TipoOperacion {
+        BUSCAR("buscado"),
         CREAR("creado"),
         ACTUALIZAR("actualizado"),
         ELIMINAR("eliminado");
@@ -20,5 +21,5 @@ public interface GenericDAO<T> {
     List<T> readByNumberRange(String attribute, Double min, Double max);
     void update(T entity);
     void delete(T entity);
-    void showOperationStatus(TipoOperacion operacion, boolean success);
+    void showOperationStatus(TipoOperacion operacion, boolean success, String... causa_error);
 }

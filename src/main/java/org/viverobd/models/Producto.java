@@ -35,9 +35,9 @@ public class Producto implements Serializable {
     private float pro_precio;
     private TipoProducto pro_tipo;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pla_producto", nullable=false)
-        private Planta pro_planta;
+    private Planta pro_planta;
 
     @OneToMany
     @JoinColumn(name = "stock_producto", nullable = false)
@@ -87,7 +87,7 @@ public class Producto implements Serializable {
 
     public Planta getPro_planta(){return pro_planta;}
     public void formPro_planta(Planta planta){this.pro_planta = planta;}
-    public void dropPro_planta(Planta planta){this.pro_planta = planta;}
+    public void dropPro_planta(){this.pro_planta = null;}
 
     public List<Stock> getProd_stock() {return prod_stock;}
     public void formPro_stock(Stock stock){this.prod_stock.add(stock);}

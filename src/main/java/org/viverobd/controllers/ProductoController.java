@@ -1,20 +1,29 @@
 package org.viverobd.controllers;
 
+import org.viverobd.services.ProductoService;
+import org.viverobd.services.ProductoServiceImpl;
+import org.viverobd.dao.ProductoDAO;
+import org.viverobd.models.Producto;
+import org.viverobd.models.Producto.TipoProducto;
+import org.viverobd.models.Planta;
+import org.viverobd.models.Planta.TipoPlanta;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import org.viverobd.dao.ProductoDAO;
-import org.viverobd.dao.PlantaDAO;
-import org.viverobd.models.Producto;
-import org.viverobd.models.Producto.TipoProducto;
-import org.viverobd.models.Planta;
-import org.viverobd.models.Planta.TipoPlanta;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+
+import java.io.IOException;
 import java.util.*;
 
 public class ProductoController {
@@ -36,10 +45,15 @@ public class ProductoController {
     @FXML private ChoiceBox<String> tipoProd;
     @FXML private ChoiceBox<String> tipoProdBusqueda;
 
-    private final String rutaDB = "./db/viverobd.odb";
-
+    private static EntityManagerFactory emf;
+    private ProductoService productoService;
 
     @FXML void initialize(){
+        if (emf == null) {
+            String rutaDB = "./db/viverobd.odb";
+            emf = Persistence.createEntityManagerFactory(rutaDB);
+        }
+        productoService = new ProductoServiceImpl(emf);
         // Cargar los ChoiceBox con los valores de los Enums
         for (TipoProducto tipo : TipoProducto.values()) {
             tipoProd.getItems().add(tipo.nombre);
@@ -67,29 +81,23 @@ public class ProductoController {
 
     @FXML void agregarProd(ActionEvent event) {
         if (camposCorrectos()) {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
-            EntityManager em = emf.createEntityManager();
+            Producto tempProd = construirProducto();
 
-            if (em.isOpen()) {
-                Producto productoCrear = construirProducto();
-
-                if("Plantas".equalsIgnoreCase(tipoProd.getValue())){
-                    Planta nuevaPlanta = construirPlanta();
-
-                    productoCrear.formPro_planta(nuevaPlanta); //Relacionamos el producto con la planta
-                    nuevaPlanta.formPla_prod(productoCrear); //Relacionamos la planta con el producto
-
-                    PlantaDAO plantaGenericDAO = new PlantaDAO(em, Planta.class);
-                    plantaGenericDAO.create(nuevaPlanta);
-                }
-
-                ProductoDAO productoGenericDAO = new ProductoDAO(em, Producto.class);
-                productoGenericDAO.create(productoCrear);
-
-                limpiarForm(null);
-                em.close();
-                emf.close();
+            // Comprobamos si el producto ya existe en la base de datos
+            Producto productoExistente = productoService.buscarPorId(tempProd.getProd_nombre());
+            if (productoExistente != null) {
+                mostrarAlerta("Error", "El producto ya existe en la base de datos", Alert.AlertType.ERROR);
+                return;
             }
+
+            if("Plantas".equalsIgnoreCase(tipoProd.getValue())){
+                Planta nuevaPlanta = construirPlanta();
+                tempProd.formPro_planta(nuevaPlanta); //Relacionamos el producto con la planta
+                nuevaPlanta.formPla_prod(tempProd); //Relacionamos la planta con el producto
+            }
+
+            productoService.agregarProducto(tempProd);
+            limpiarForm(null);
         }
     }
 
@@ -97,46 +105,35 @@ public class ProductoController {
         String criterioSeleccionado = criterio.getValue();
         List<Producto> resultadoBusqueda = null;
 
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
-        EntityManager em = emf.createEntityManager();
-        ProductoDAO productoDAO = new ProductoDAO(em, Producto.class);
-
-        try {
-            if (criterioSeleccionado == null) {
-                // Caso: Sin criterio - Búsqueda completa
-                resultadoBusqueda = productoDAO.readByAttributes(new HashMap<>());
-            } else if ("Precio".equalsIgnoreCase(criterioSeleccionado)) {
-                // Caso: Búsqueda por rango de precio
-                if (validarRangoPrecio()) {
-                    double min = Double.parseDouble(precioMin.getText());
-                    double max = Double.parseDouble(precioMax.getText());
-                    resultadoBusqueda = productoDAO.readByNumberRange("pro_precio", min, max);
-                }
-            } else if ("Tipo".equalsIgnoreCase(criterioSeleccionado)) {
-                // Caso: Búsqueda por tipo de producto
-                if (validarTipoBusqueda()) {
-                    TipoProducto tipo = TipoProducto.fromNombre(tipoProdBusqueda.getValue());
-                    Map<String, Object> attrs = new HashMap<>();
-                    attrs.put("pro_tipo", tipo);
-                    resultadoBusqueda = productoDAO.readByAttributes(attrs);
-                }
-            } else {
-                // Caso: Otros criterios (Nombre, Descripcion)
-                if (validarParametroBusqueda(criterioSeleccionado)) {
-                    Map<String, Object> attrs = new HashMap<>();
-                    String campo = "Nombre".equalsIgnoreCase(criterioSeleccionado) ? "prod_nombre" : "pro_descripcion";
-                    attrs.put(campo, parametro.getText());
-                    resultadoBusqueda = productoDAO.readByAttributes(attrs);
-                }
+        if (criterioSeleccionado == null) {
+            // Caso: Sin criterio - Búsqueda completa
+            resultadoBusqueda = productoService.buscarTodos();
+        } else if ("Precio".equalsIgnoreCase(criterioSeleccionado)) {
+            // Caso: Búsqueda por rango de precio
+            if (validarRangoPrecio()) {
+                double min = Double.parseDouble(precioMin.getText());
+                double max = Double.parseDouble(precioMax.getText());
+                resultadoBusqueda = productoService.buscarPorRangoPrecio(min, max);
             }
-
-            if (resultadoBusqueda != null) {
-                cargarDatosTabla(resultadoBusqueda);
+        } else if ("Tipo".equalsIgnoreCase(criterioSeleccionado)) {
+            // Caso: Búsqueda por tipo de producto
+            if (validarTipoBusqueda()) {
+                TipoProducto tipo = TipoProducto.fromNombre(tipoProdBusqueda.getValue());
+                Map<String, Object> attrs = new HashMap<>();
+                attrs.put("pro_tipo", tipo);
+                resultadoBusqueda = productoService.buscarPorAtributos(attrs);
             }
-        } finally {
-            if (em.isOpen()) em.close();
-            emf.close();
+        } else {
+            // Caso: Otros criterios (Nombre, Descripcion)
+            if (validarParametroBusqueda(criterioSeleccionado)) {
+                Map<String, Object> attrs = new HashMap<>();
+                String campo = "Nombre".equalsIgnoreCase(criterioSeleccionado) ? "prod_nombre" : "pro_descripcion";
+                attrs.put(campo, parametro.getText());
+                resultadoBusqueda = productoService.buscarPorAtributos(attrs);
+            }
         }
+
+        if (resultadoBusqueda != null) cargarDatosTabla(resultadoBusqueda);
     }
 
     private boolean validarRangoPrecio() {
@@ -233,95 +230,55 @@ public class ProductoController {
     }
 
     @FXML void eliminarProd(ActionEvent event) {
-        if (camposCorrectos()) {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
-            EntityManager em = emf.createEntityManager();
+        if(camposCorrectos()){
+            // Primero se construye el objeto Producto a partir de los campos de entrada
+            Producto tempProd = construirProducto();
 
-            try {
-                Producto productoEliminar = em.find(Producto.class, nomProd.getText());
-
-                if (productoEliminar != null) {
-                    String mensaje = "¿Desea eliminar el producto: " + productoEliminar.getProd_nombre();
-
-                    if (productoEliminar.getPro_tipo() == TipoProducto.tipo_planta) {
-                        Planta planta = productoEliminar.getPro_planta();
-                        if (planta != null) {
-                            mensaje += "\nEste producto está asociado a la planta: " + planta.getPla_nombre();
-                            mensaje += "\nSi continúa, se eliminarán ambos registros.";
-                        }
-                    }
-
-                    // Mostrar confirmación al usuario
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Confirmar eliminación");
-                    alert.setHeaderText("Eliminar producto");
-                    alert.setContentText(mensaje);
-
-                    Optional<ButtonType> result = alert.showAndWait();
-
-                    if (result.isPresent() && result.get() == ButtonType.OK) {
-                        em.getTransaction().begin();
-
-                        // Si es planta, eliminar primero la planta
-                        if (productoEliminar.getPro_tipo() == TipoProducto.tipo_planta) {
-                            Planta planta = productoEliminar.getPro_planta();
-                            if (planta != null) {
-                                em.remove(planta);
-                            }
-                        }
-
-                        // Luego eliminar el producto
-                        em.remove(productoEliminar);
-
-                        em.getTransaction().commit();
-                        limpiarForm(null);
-                    } else {
-                        // El usuario canceló
-                        Alert cancelAlert = new Alert(Alert.AlertType.INFORMATION);
-                        cancelAlert.setTitle("Operación cancelada");
-                        cancelAlert.setHeaderText(null);
-                        cancelAlert.setContentText("No se eliminó ningún registro.");
-                        cancelAlert.showAndWait();
-                    }
-                }
-            } catch (Exception e) {
-                if (em.getTransaction().isActive()) {
-                    em.getTransaction().rollback();
-                }
-                e.printStackTrace();
-            } finally {
-                em.close();
-                emf.close();
+            // Con su relacion Planta si existe
+            if ("Plantas".equalsIgnoreCase(tipoProd.getValue())) {
+                Planta tempPlanta = construirPlanta();
+                tempProd.formPro_planta(tempPlanta);
+                tempPlanta.formPla_prod(tempProd);
             }
+
+            // Se comprueba si ese objeto introducido existe en la bd
+            Producto productoAEliminar = productoService.buscarPorId(tempProd.getProd_nombre());
+
+            if (productoAEliminar == null) {
+                mostrarAlerta("Error", "El producto no existe en la base de datos", Alert.AlertType.ERROR);
+                return;
+            }
+
+            String mensajeConfirmacion = "Plantas".equalsIgnoreCase(tipoProd.getValue())
+                    ? "Esta seguro de eliminar los objetos Producto y Planta seleccionados?"
+                    : "Esta seguro de eliminar el objeto Producto seleccionado?";
+
+            if (!mostrarConfirmacion("Confirmar eliminacion", mensajeConfirmacion)) return;
+
+            productoService.eliminarProducto(productoAEliminar);
+            limpiarForm(null);
         }
     }
 
-
     @FXML void modificarProd(ActionEvent event) {
         if (camposCorrectos()) {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
-            EntityManager em = emf.createEntityManager();
-
-            if (em.isOpen()) {
-                Producto productoModificado = construirProducto();
-
-                if("Plantas".equalsIgnoreCase(tipoProd.getValue())){
-                    Planta nuevaPlanta = construirPlanta();
-
-                    nuevaPlanta.formPla_prod(productoModificado); //Relacionamos la planta con el producto
-                    productoModificado.formPro_planta(nuevaPlanta); //Relacionamos el producto con la planta
-
-                    PlantaDAO plantaGenericDAO = new PlantaDAO(em, Planta.class);
-                    plantaGenericDAO.update(nuevaPlanta);
-                }
-
-                ProductoDAO productoGenericDAO = new ProductoDAO(em, Producto.class);
-                productoGenericDAO.update(productoModificado);
-
-                limpiarForm(null);
-                em.close();
-                emf.close();
+            Producto tempProd = construirProducto();
+            Producto productoExistente = productoService.buscarPorId(tempProd.getProd_nombre());
+            if (productoExistente == null) {
+                mostrarAlerta("Error", "El producto no existe en la base de datos", Alert.AlertType.ERROR);
+                return;
             }
+
+            if (!mostrarConfirmacion("Confirmar actualizacion", "Esta seguro de actualizar el objeto Producto seleccionado?")) return;
+
+            if ("Plantas".equalsIgnoreCase(tipoProd.getValue())) {
+                Planta nuevaPlanta = construirPlanta();
+                tempProd.formPro_planta(nuevaPlanta);
+                nuevaPlanta.formPla_prod(tempProd);
+            }
+
+            productoService.modificarProducto(tempProd);
+            limpiarForm(null);
         }
     }
 
@@ -435,11 +392,7 @@ public class ProductoController {
         }
 
         if (!errores.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error de llenado");
-            alert.setHeaderText("Por favor corrija los siguientes errores:");
-            alert.setContentText(errores.toString());
-            alert.showAndWait();
+            mostrarAlerta("Error de llenado", "Por favor corrija los siguientes errores:\n" + errores.toString(), Alert.AlertType.ERROR);
             if (errorNode != null) {
                 errorNode.requestFocus();
             }
@@ -450,27 +403,87 @@ public class ProductoController {
     }
 
     private void configurarTablaBusqueda() {
-        // 1. Definir la columna para el Nombre del Producto
-        TableColumn<Producto, String> colNombre = new TableColumn<>("Nombre");
+        // Columna para el Nombre del Producto
+        TableColumn<Producto, String> colNombre = new TableColumn<>("ID PRODUCTO");
         colNombre.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("prod_nombre"));
 
-        // 2. Definir la columna para la Descripción
-        TableColumn<Producto, String> colDescripcion = new TableColumn<>("Descripción");
+        // Columna para la Descripción
+        TableColumn<Producto, String> colDescripcion = new TableColumn<>("DESCRIPCIÓN");
         colDescripcion.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("pro_descripcion"));
 
-        // 3. Definir la columna para el Precio
-        TableColumn<Producto, Float> colPrecio = new TableColumn<>("Precio");
+        // Columna para el Precio
+        TableColumn<Producto, Float> colPrecio = new TableColumn<>("PRECIO");
         colPrecio.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("pro_precio"));
 
-        // 4. Definir la columna para el Tipo de Producto
-        TableColumn<Producto, Producto.TipoProducto> colTipo = new TableColumn<>("Tipo");
+        // Columna para el Tipo de Producto
+        TableColumn<Producto, Producto.TipoProducto> colTipo = new TableColumn<>("TIPO DE PRODUCTO");
         colTipo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("pro_tipo"));
+
+        // Columna para el Nombre de la Planta
+        TableColumn<Producto, String> colNombrePlanta = new TableColumn<>("NOMBRE DE LA PLANTA");
+        colNombrePlanta.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null) {
+                return new javafx.beans.property.SimpleStringProperty(p.getPro_planta().getPla_nombre());
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
+        // Columna para el Tipo de Planta
+        TableColumn<Producto, String> colTipoPlanta = new TableColumn<>("TIPO DE PLANTA");
+        colTipoPlanta.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null && p.getPro_planta().getPla_tipo() != null) {
+                return new javafx.beans.property.SimpleStringProperty(p.getPro_planta().getPla_tipo().nombre);
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
+        // Columna para la Humedad
+        TableColumn<Producto, String> colHumedad = new TableColumn<>("HUMEDAD (%)");
+        colHumedad.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null) {
+                return new javafx.beans.property.SimpleStringProperty(String.valueOf(p.getPro_planta().getPla_humedad()));
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
+        // Columna para el Clima
+        TableColumn<Producto, String> colClima = new TableColumn<>("CLIMA (°C)");
+        colClima.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null) {
+                return new javafx.beans.property.SimpleStringProperty(String.valueOf(p.getPro_planta().getPla_clima()));
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
+        // Columna para la Luz
+        TableColumn<Producto, String> colLuz = new TableColumn<>("LUZ");
+        colLuz.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null) {
+                return new javafx.beans.property.SimpleStringProperty(String.valueOf(p.getPro_planta().getPla_luz()));
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
+        //Columna para los Cuidados
+        TableColumn<Producto, String> colCuidados = new TableColumn<>("CUIDADOS");
+        colCuidados.setCellValueFactory(cellData -> {
+            Producto p = cellData.getValue();
+            if (p.getPro_planta() != null) {
+                return new javafx.beans.property.SimpleStringProperty(p.getPro_planta().getPla_cuidados());
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
 
         tablaPro.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Limpiar columnas existentes (si las hay) y añadir las nuevas a la tabla
         tablaPro.getColumns().clear();
-        tablaPro.getColumns().addAll(colNombre, colDescripcion, colPrecio, colTipo);
+        tablaPro.getColumns().addAll(colNombre, colDescripcion, colPrecio, colTipo, colNombrePlanta, colTipoPlanta, colHumedad, colClima, colLuz, colCuidados);
 
         // Configurar RowFactory para doble clic
         tablaPro.setRowFactory(tv -> {
@@ -499,24 +512,40 @@ public class ProductoController {
         }
 
         if (p.getPro_tipo() == TipoProducto.tipo_planta) {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory(rutaDB);
-            EntityManager em = emf.createEntityManager();
-            try {
-                Planta planta = em.find(Planta.class, p.getProd_nombre());
-                if (planta != null) {
-                    nombrePla.setText(planta.getPla_nombre());
-                    climaPla.setText(String.valueOf(planta.getPla_clima()));
-                    humedadPla.setText(String.valueOf(planta.getPla_humedad()));
-                    luzPla.setText(String.valueOf(planta.getPla_luz()));
-                    cuidadosPla.setText(planta.getPla_cuidados());
-                    if (planta.getPla_tipo() != null) {
-                        tipoPla.setValue(planta.getPla_tipo().nombre);
-                    }
+            Planta planta = productoService.buscarPlantaPorId(p.getProd_nombre());
+            if (planta != null) {
+                nombrePla.setText(planta.getPla_nombre());
+                climaPla.setText(String.valueOf(planta.getPla_clima()));
+                humedadPla.setText(String.valueOf(planta.getPla_humedad()));
+                luzPla.setText(String.valueOf(planta.getPla_luz()));
+                cuidadosPla.setText(planta.getPla_cuidados());
+                if (planta.getPla_tipo() != null) {
+                    tipoPla.setValue(planta.getPla_tipo().nombre);
                 }
-            } finally {
-                em.close();
-                emf.close();
             }
+        }
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    private boolean mostrarConfirmacion(String titulo, String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
+    public static void shutdown() {
+        if (emf != null && emf.isOpen()) {
+            emf.close();
         }
     }
 
@@ -540,23 +569,30 @@ public class ProductoController {
     }
 
     private void listenerCriterioBusqueda(ObservableValue<? extends String> obs, String oldVal, String newVal) {
-        if(criterio.getValue() == null){
+        if(newVal == null){
             parametro.disableProperty().set(true);
+            parametro.setVisible(true);
+            parametrosNumericos.setVisible(false);
+            tipoProdBusqueda.setVisible(false);
+            parametro.clear();
+            precioMin.clear();
+            precioMax.clear();
+            tipoProdBusqueda.getSelectionModel().clearSelection();
             return;
         }
         parametro.disableProperty().set(false);
 
-        if("Precio".equals(criterio.getValue())){
+        if("Precio".equals(newVal)){
             parametrosNumericos.setVisible(true);
             parametro.setVisible(false);
             tipoProdBusqueda.setVisible(false);
         }
-        else if("Tipo".equals(criterio.getValue())){
+        else if("Tipo".equals(newVal)){
             tipoProdBusqueda.setVisible(true);
             parametrosNumericos.setVisible(false);
             parametro.setVisible(false);
         }
-        else{
+        else if("Nombre".equals(newVal) || "Descripcion".equals(newVal)){
             parametro.setVisible(true);
             parametrosNumericos.setVisible(false);
             tipoProdBusqueda.setVisible(false);
@@ -565,10 +601,15 @@ public class ProductoController {
         precioMin.clear();
         precioMax.clear();
         parametro.clear();
-        tipoProd.getSelectionModel().clearSelection();
+        tipoProdBusqueda.getSelectionModel().clearSelection();
     }
 
     private void cargarDatosTabla(List<Producto> productos) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultados de búsqueda");
+        alert.setContentText("Búsqueda realizada con éxito");
+        alert.showAndWait();
+
         tablaPro.getItems().clear();
         tablaPro.getItems().addAll(productos);
         tablaPro.refresh();
@@ -595,5 +636,22 @@ public class ProductoController {
         planta.setPla_tipo(TipoPlanta.fromNombre(tipoPla.getValue()));
 
         return planta;
+    }
+
+
+    @FXML
+    void menuPrincipal(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Interfaces/MenuPrincipal.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la ventana del menú principal: " + e.getMessage(), Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
     }
 }

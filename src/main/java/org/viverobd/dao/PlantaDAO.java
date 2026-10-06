@@ -3,6 +3,8 @@ package org.viverobd.dao;
 import jakarta.persistence.EntityManager;
 import org.viverobd.models.Planta;
 
+import javax.swing.*;
+
 public class PlantaDAO extends GenericDAOImpl<Planta>{
     public PlantaDAO(EntityManager em, Class<Planta> entityClass) {
         super(em, entityClass);
@@ -10,18 +12,30 @@ public class PlantaDAO extends GenericDAOImpl<Planta>{
 
     @Override
     public void update(Planta planActualizada){
-        em.getTransaction().begin();
+        try{
+            Planta planAnterior = em.find(Planta.class, planActualizada.getProd_nombre()); //Buscamos la entidad por su Id
+            if(planAnterior == null){
+                showOperationStatus(TipoOperacion.ACTUALIZAR, false, "No existe el objeto");
+                return;
+            }
 
-        Planta planAnterior = em.find(Planta.class, planActualizada.getProd_nombre()); //Su id
-        planAnterior.setPla_nombre(planActualizada.getPla_nombre());
-        planAnterior.setPla_clima(planActualizada.getPla_clima());
-        planAnterior.setPla_humedad(planActualizada.getPla_humedad());
-        planAnterior.setPla_luz(planActualizada.getPla_luz());
-        planAnterior.setPla_cuidados(planActualizada.getPla_cuidados());
-        planAnterior.setPla_tipo(planActualizada.getPla_tipo());
+            em.getTransaction().begin();
 
-        em.getTransaction().commit();
+            planAnterior.setPla_nombre(planActualizada.getPla_nombre());
+            planAnterior.setPla_clima(planActualizada.getPla_clima());
+            planAnterior.setPla_humedad(planActualizada.getPla_humedad());
+            planAnterior.setPla_luz(planActualizada.getPla_luz());
+            planAnterior.setPla_cuidados(planActualizada.getPla_cuidados());
+            planAnterior.setPla_tipo(planActualizada.getPla_tipo());
 
-        super.showOperationStatus(TipoOperacion.ACTUALIZAR, true);
+            em.getTransaction().commit();
+            showOperationStatus(TipoOperacion.ACTUALIZAR, true);
+        }
+        catch(Exception e){
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            showOperationStatus(TipoOperacion.ACTUALIZAR, false, e.getMessage());
+        }
     }
 }
