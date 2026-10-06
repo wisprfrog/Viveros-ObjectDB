@@ -305,7 +305,7 @@ public class ProductoController {
         StringBuilder errores = new StringBuilder();
         javafx.scene.Node errorNode = null;
 
-        if (nomProd.getText().isEmpty() || !nomProd.getText().matches("[a-zA-Z0-9]+")) {
+        if (nomProd.getText().trim().isEmpty() || !nomProd.getText().matches("[a-zA-Z0-9 ]+")) {
             errores.append("- El nombre del producto es obligatorio.\n");
             if (errorNode == null) errorNode = nomProd;
         }
@@ -605,11 +605,6 @@ public class ProductoController {
     }
 
     private void cargarDatosTabla(List<Producto> productos) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Resultados de búsqueda");
-        alert.setContentText("Búsqueda realizada con éxito");
-        alert.showAndWait();
-
         tablaPro.getItems().clear();
         tablaPro.getItems().addAll(productos);
         tablaPro.refresh();

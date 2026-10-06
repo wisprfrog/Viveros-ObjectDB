@@ -44,7 +44,7 @@ public class MenuController {
 
     @FXML
     void zonasInt(ActionEvent event) {
-        cambiarEscena(event, "/Interfaces/Zonas.fxml");
+        cambiarEscena(event, "/Interfaces/Zona.fxml");
     }
 
     private void cambiarEscena(ActionEvent event, String rutaFxml) {

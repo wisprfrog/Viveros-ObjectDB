@@ -19,9 +19,9 @@ public class ZonaEmpleado implements Serializable{
     @JoinColumn(name = "emp_zonae", nullable = false)
         private Empleado zonae_emp;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "zona_zonae", nullable = false)
-        private List<Zona> zonae_zona = new ArrayList<>();
+    private Zona zonae_zona;
 
     public ZonaEmpleado() {}
 
@@ -45,10 +45,10 @@ public class ZonaEmpleado implements Serializable{
     public void setZonae_hora_asignacion(String zonae_hora_asignacion) { this.zonae_hora_asignacion = zonae_hora_asignacion; }
 
     public Empleado getZonae_emp() { return zonae_emp; }
-    public void formZonae_emp(Empleado zonae_emp) { this.zonae_emp = zonae_emp; }
+    public void formZonae_emp(Empleado zonae_emp) { this.zonae_emp = zonae_emp;  }
     public void dropZonae_emp() { this.zonae_emp = null; }
 
-    public List<Zona> getZonae_zona() { return zonae_zona; }
-    public void formZonae_zona(Zona zonae_zona) { this.zonae_zona.add(zonae_zona); }
-    public void dropZonae_zona(Zona zonae_zona) { this.zonae_zona.remove(zonae_zona); }
+    public Zona getZonae_zona() { return zonae_zona; }
+    public void formZonae_zona(Zona zonae_zona) { this.zonae_zona = zonae_zona; }
+    public void dropZonae_zona() { this.zonae_zona = null; }
 }
