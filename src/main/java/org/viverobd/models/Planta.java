@@ -16,31 +16,38 @@ public class Planta implements Serializable{
         planta_aromatica("Planta Aromatica"),
         planta_agricola("Planta Agricola"),
         hortaliza("Hortaliza"),
-        planta_acuatica("Planta Acuatica"),;
+        planta_acuatica("Planta Acuatica");
 
         public final String nombre;
 
         TipoPlanta(String nombre){ this.nombre = nombre; }
+
+        public static TipoPlanta fromNombre(String nombre) {
+            for (TipoPlanta tipo : TipoPlanta.values()) {
+                if (tipo.nombre.equalsIgnoreCase(nombre)) {
+                    return tipo;
+                }
+            }
+            return null;
+        }
     }
 
-    @Id private String pla_nombre;
+    @Id private String prod_nombre;
+    private String pla_nombre;
     private double pla_clima;
     private double pla_humedad;
     private double pla_luz;
     private String pla_cuidados;
     private TipoPlanta pla_tipo;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name="pro_planta", nullable = false)
     private Producto pla_producto;
 
-    @OneToMany
-    @JoinColumn(name="zonap_pla", nullable = false)
-    private List<ZonaPlanta> pla_zonap = new ArrayList<>();
-
     public Planta(){}
 
-    public Planta(String nom, double clima, double humedad, double luz, String cuidados, TipoPlanta tipo){
+    public Planta(String prod_nombre, String nom, double clima, double humedad, double luz, String cuidados, TipoPlanta tipo){
+        this.prod_nombre=prod_nombre;
         this.pla_nombre=nom;
         this.pla_clima = clima;
         this.pla_humedad=humedad;
@@ -49,13 +56,15 @@ public class Planta implements Serializable{
         this.pla_tipo=tipo;
     }
 
+    public void setProd_nombre(String prod_nombre) { this.prod_nombre=prod_nombre; }
+    public String getProd_nombre() { return prod_nombre; }
+
     public void setPla_nombre(String pla_nombre) {
         this.pla_nombre = pla_nombre;
     }
     public String getPla_nombre() {
         return pla_nombre;
     }
-
 
     public void setPla_clima(double pla_clima) {
         this.pla_clima = pla_clima;
@@ -95,7 +104,4 @@ public class Planta implements Serializable{
     public void formPla_prod(Producto producto){this.pla_producto = producto;}
     public void dropPla_prod(){this.pla_producto = null;}
 
-    public List<ZonaPlanta> getPla_zonap() { return pla_zonap; }
-    public void formPla_zonap(ZonaPlanta zonap) { this.pla_zonap.add(zonap); }
-    public void dropPla_zonap(ZonaPlanta zonap) { this.pla_zonap.remove(zonap); }
 }

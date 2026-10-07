@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<AnchorPane prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.MenuController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c3d9b6" height="314.0" layoutX="28.0" layoutY="26.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="947.0" />
+      <Text fill="#7da78c" layoutX="364.0" layoutY="133.0" strokeType="OUTSIDE" strokeWidth="0.0" text="VIVERO">
+         <font>
+            <Font name="Berlin Sans FB" size="82.0" />
+         </font>
+      </Text>
+      <Text fill="#7da78c" layoutX="206.0" layoutY="203.0" strokeType="OUTSIDE" strokeWidth="0.0" text="&quot;NOMBRE DEL VIVERO&quot;">
+         <font>
+            <Font name="Berlin Sans FB" size="58.0" />
+         </font>
+      </Text>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c3d9b6" height="413.0" layoutX="28.0" layoutY="353.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="947.0" />
+      <Text fill="#7da78c" layoutX="276.0" layoutY="265.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Hernandez Franco Brandom Galder&#10;Jiménez Cubas Ericka" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="30.0" />
+         </font>
+      </Text>
+      <Button layoutX="40.0" layoutY="400.0" mnemonicParsing="false" onAction="#viverosInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="VIVEROS" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="37.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="275.0" layoutY="400.0" mnemonicParsing="false" onAction="#zonasInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="ZONAS" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="37.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="510.0" layoutY="400.0" mnemonicParsing="false" onAction="#productosInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="PRODUCTOS" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="30.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="744.0" layoutY="400.0" mnemonicParsing="false" onAction="#empleadosInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="EMPLEADOS" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="30.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="157.0" layoutY="582.0" mnemonicParsing="false" onAction="#stockInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="STOCK" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="37.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="392.0" layoutY="582.0" mnemonicParsing="false" onAction="#zonaeInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="ZONA DE&#10;EMPLEADO" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="29.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="626.0" layoutY="582.0" mnemonicParsing="false" onAction="#zonapInt" prefHeight="159.0" prefWidth="218.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="ZONA DE&#10;PLANTAS">
+         <font>
+            <Font name="Berlin Sans FB" size="37.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+   </children>
+</AnchorPane>

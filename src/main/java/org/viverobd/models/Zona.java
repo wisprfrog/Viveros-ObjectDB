@@ -33,9 +33,8 @@ public class Zona implements Serializable{
     private float zona_superficie;
     private TipoZona zona_tipo;
 
-    @ManyToOne
-    @JoinColumn(name = "zonae_zona", nullable = false)
-        private ZonaEmpleado zona_zonae;
+    @OneToMany(mappedBy = "zonae_zona")
+    private List<ZonaEmpleado> zona_zonae = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "viv_zona", nullable = false)
@@ -66,9 +65,9 @@ public class Zona implements Serializable{
     public TipoZona getZona_tipo() { return zona_tipo; }
     public void setZona_tipo(TipoZona zona_tipo) { this.zona_tipo = zona_tipo; }
 
-    public ZonaEmpleado getZona_zonae() { return zona_zonae; }
-    public void formZona_zonae(ZonaEmpleado zona_zonae) { this.zona_zonae = zona_zonae; }
-    public void dropZona_zonae() { this.zona_zonae = null; }
+    public List<ZonaEmpleado> getZona_zonae() { return zona_zonae; }
+    public void formZona_zonae(ZonaEmpleado zona_zonae) { this.zona_zonae.add(zona_zonae); }
+    public void dropZona_zonae(ZonaEmpleado zona_zonae) { this.zona_zonae.remove(zona_zonae); }
 
     public Vivero getZona_viv() { return zona_viv; }
     public void formZona_viv(Vivero zona_viv) { this.zona_viv = zona_viv; }

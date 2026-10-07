@@ -1,206 +1,134 @@
 package org.viverobd;
 
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import org.viverobd.models.*;
+
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.Date;
 
 public class PoblarBD {
-
     public static void main(String[] args) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("./db/viverobd.odb");
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("db/viverobd.odb");
         EntityManager em = emf.createEntityManager();
 
         try {
             em.getTransaction().begin();
 
-            long currentTime = System.currentTimeMillis();
-            long threeMonthsAgo = currentTime - (90L * 24 * 60 * 60 * 1000);
-            long twoYearsAgo = currentTime - (2L * 365 * 24 * 60 * 60 * 1000);
+            // 1. Crear Empleados
+            Empleado emp1 = new Empleado("600111222", "Juan Perez", "12345678A");
+            Empleado emp2 = new Empleado("600333444", "Maria Garcia", "87654321B");
+            Empleado emp3 = new Empleado("600555666", "Carlos Lopez", "11223344C");
 
-            // 1. Crear 10 Viveros
-            List<Vivero> viveros = new ArrayList<>();
-            for (int i = 1; i <= 10; i++) {
-                Vivero v = new Vivero("90000000" + (i < 10 ? "0" + i : i), "Vivero " + i, "Calle Falsa " + i);
-                viveros.add(v);
-                em.persist(v);
-            }
+            // 2. Crear Viveros
+            Vivero viv1 = new Vivero("912345678", "Vivero Central", "Calle Principal 1");
+            viv1.formViv_emp(emp1); // Juan es el encargado
+            emp1.formEmp_viv(viv1);
 
-            // 2. Crear 10 Empleados y asociar con Viveros (Relación 1:1)
-            List<Empleado> empleados = new ArrayList<>();
-            for (int i = 1; i <= 10; i++) {
-                Empleado e = new Empleado("60000000" + (i < 10 ? "0" + i : i), "Empleado " + i, "12345678" + (char) ('A' + (i % 26)));
-                Vivero v = viveros.get(i - 1);
-                e.formEmp_viv(v);
-                v.formViv_emp(e);
-                empleados.add(e);
-                em.persist(e);
-            }
+            Vivero viv2 = new Vivero("918765432", "Vivero del Sur", "Av. de la Paz 20");
+            viv2.formViv_emp(emp2); // Maria es la encargada
+            emp2.formEmp_viv(viv2);
 
             // 3. Crear Zonas
-            List<Zona> zonas = new ArrayList<>();
-            // Zonas para cumplir con las consultas y diversidad
-            String[] nombresZonasPrefijados = {"Zona Regadio A", "Zona Climatizada B", "Zona Almacen C", "Zona Siembra D", "Zona Crecimiento E", "Zona Aclimatacion F", "Zona Sustrato G", "Zona Regadio H", "Zona Climatizada I", "Zona Almacen J"};
-            Zona.TipoZona[] tiposZonasPrefijados = {
-                    Zona.TipoZona.zona_regadio, Zona.TipoZona.zona_climatizada, Zona.TipoZona.zona_almacenamiento,
-                    Zona.TipoZona.zona_siembra, Zona.TipoZona.zona_crecimiento, Zona.TipoZona.zona_aclimatacion,
-                    Zona.TipoZona.zona_preparacion_sustrato, Zona.TipoZona.zona_regadio, Zona.TipoZona.zona_climatizada,
-                    Zona.TipoZona.zona_almacenamiento
-            };
+            Zona zona1 = new Zona("Invernadero A", 150.5f, Zona.TipoZona.zona_climatizada);
+            zona1.formZona_viv(viv1);
+            viv1.formViv_zona(zona1);
 
-            for (int i = 1; i <= 10; i++) {
-                Zona z = new Zona(nombresZonasPrefijados[i - 1], 100.0f * i, tiposZonasPrefijados[i - 1]);
-                Vivero v = viveros.get(i - 1);
-                z.formZona_viv(v);
-                v.formViv_zona(z);
-                zonas.add(z);
-                em.persist(z);
-            }
+            Zona zona2 = new Zona("Zona Exterior 1", 500.0f, Zona.TipoZona.zona_siembra);
+            zona2.formZona_viv(viv1);
+            viv1.formViv_zona(zona2);
 
-            // 4. Crear Productos
-            List<Producto> productos = new ArrayList<>();
-            // Crear 10 productos de tipo planta (para las 10 plantas)
-            for (int i = 1; i <= 10; i++) {
-                Producto p = new Producto("PROD-PLA" + i, "Descripcion Planta " + i, 10.5f * i, Producto.TipoProducto.tipo_planta);
-                productos.add(p);
-                em.persist(p);
-            }
-            // Crear algunos productos extra de otros tipos
-            for (int i = 1; i <= 2; i++) {
-                Producto p = new Producto("PROD-ACC" + i, "Accesorio " + i, 5.0f * i, Producto.TipoProducto.tipo_accesorio);
-                productos.add(p);
-                em.persist(p);
-            }
-            for (int i = 1; i <= 2; i++) {
-                Producto p = new Producto("PROD-DEC" + i, "Decoracion " + i, 15.0f * i, Producto.TipoProducto.tipo_decoracion);
-                productos.add(p);
-                em.persist(p);
-            }
+            Zona zona3 = new Zona("Almacen General", 80.0f, Zona.TipoZona.zona_almacenamiento);
+            zona3.formZona_viv(viv2);
+            viv2.formViv_zona(zona3);
 
-            // 5. Crear 10 Plantas
-            List<Planta> plantas = new ArrayList<>();
-            Random random = new Random();
-            Planta.TipoPlanta[] tiposPlantas = Planta.TipoPlanta.values();
-            for (int i = 1; i <= 10; i++) {
-                // Planta 1, 2 y 8 serán de clima frío (pla_clima bajo, ej: 5.0)
-                double clima = (i == 1 || i == 2 || i == 8) ? 5.0 : 25.0;
-                Planta.TipoPlanta tipoAleatorio = tiposPlantas[random.nextInt(tiposPlantas.length)];
-                Planta pla = new Planta("Planta " + i, clima, 60.0, 80.0, "Cuidados planta " + i, tipoAleatorio);
-                // Asociar con un producto de tipo planta (relación 1:1, los primeros 10 son plantas)
-                Producto p = productos.get(i - 1);
-                pla.formPla_prod(p);
-                p.formPro_planta(pla);
-                plantas.add(pla);
-                em.persist(pla);
-            }
+            // 4. Crear Asignaciones de Empleados a Zonas (ZonaEmpleado)
+            long now = System.currentTimeMillis();
+            ZonaEmpleado ze1 = new ZonaEmpleado("ZE001", new Timestamp(now), null, "08:00");
+            ze1.formZonae_emp(emp3);
+            emp3.formEmp_zonae(ze1);
+            ze1.formZonae_zona(zona1);
+            
+            ZonaEmpleado ze2 = new ZonaEmpleado("ZE002", new Timestamp(now), null, "09:00");
+            ze2.formZonae_emp(emp1);
+            emp1.formEmp_zonae(ze2);
+            ze2.formZonae_zona(zona2);
 
-            // 6. Relaciones: ZonaEmpleado (Asignar empleados a zonas e historial)
-            int zeIdCounter = 1;
-            for (int i = 1; i <= 10; i++) {
-                // Registro actual: Cada empleado en su zona correspondiente
-                Empleado e = empleados.get(i - 1);
-                Zona z = zonas.get(i - 1);
-                ZonaEmpleado ze = new ZonaEmpleado("ZE-ACT-" + (zeIdCounter++), new Timestamp(currentTime), null, "08:00");
+            // 5. Crear Productos y Plantas
+            Producto p1 = new Producto("Maceta Ceramica", "Maceta de barro cocido decorada", 12.50f, Producto.TipoProducto.tipo_decoracion);
+            
+            Producto p2 = new Producto("Rosa Roja", "Rosal de flores rojas intensas", 8.95f, Producto.TipoProducto.tipo_planta);
+            Planta pla2 = new Planta("Rosa Roja", "Rosa Gallica", 20.0, 60.0, 80.0, "Riego moderado, sol directo", Planta.TipoPlanta.planta_ornamental);
+            p2.formPro_planta(pla2);
+            pla2.formPla_prod(p2);
 
-                ze.formZonae_emp(e);
-                e.formEmp_zonae(ze);
-                z.formZona_zonae(ze);
-                ze.formZonae_zona(z);
-                em.persist(ze);
+            Producto p3 = new Producto("Tomate Cherry", "Planta de tomates cherry dulces", 4.50f, Producto.TipoProducto.tipo_planta);
+            Planta pla3 = new Planta("Tomate Cherry", "Solanum lycopersicum", 25.0, 70.0, 90.0, "Mucho sol y agua", Planta.TipoPlanta.hortaliza);
+            p3.formPro_planta(pla3);
+            pla3.formPla_prod(p3);
 
-                // Relaciones extra: Algunos empleados asignados a otras zonas (movilidad)
-                if (i % 3 == 0) {
-                    Zona zExtra = zonas.get((i) % 10);
-                    ZonaEmpleado zeExtra = new ZonaEmpleado("ZE-EXT-" + (zeIdCounter++), new Timestamp(currentTime - 3600000), null, "09:00");
-                    zeExtra.formZonae_emp(e);
-                    e.formEmp_zonae(zeExtra);
-                    zExtra.formZona_zonae(zeExtra);
-                    zeExtra.formZonae_zona(zExtra);
-                    em.persist(zeExtra);
-                }
+            // 6. Crear Stock
+            Stock s1 = new Stock(1, 50);
+            s1.formStock_zona(zona1);
+            zona1.formZona_stock(s1);
+            s1.formStock_producto(p2);
+            p2.formPro_stock(s1);
 
-                // Registro histórico (para consulta 6 y diversidad)
-                if (i == 3 || i == 10) { // Empleado 3 y 10 estuvieron en Zona Almacen hace tiempo
-                    Zona zAlmacen = (i == 3) ? zonas.get(2) : zonas.get(9);
-                    ZonaEmpleado zeH = new ZonaEmpleado("ZE-HIST-" + (zeIdCounter++), new Timestamp(twoYearsAgo + 1000), new Timestamp(currentTime - 500000), "09:00");
-                    zeH.formZonae_emp(e);
-                    e.formEmp_zonae(zeH);
-                    zAlmacen.formZona_zonae(zeH);
-                    zeH.formZonae_zona(zAlmacen);
-                    em.persist(zeH);
-                }
-            }
+            Stock s2 = new Stock(2, 100);
+            s2.formStock_zona(zona2);
+            zona2.formZona_stock(s2);
+            s2.formStock_producto(p3);
+            p3.formPro_stock(s2);
 
-            // 7. Relaciones: ZonaPlanta (Ubicación de plantas en zonas y registro de temperatura histórico)
-            int zpId = 1;
-            for (int i = 1; i <= 10; i++) {
-                Planta pla = plantas.get(i - 1);
-                Zona z = zonas.get(i - 1);
+            Stock s3 = new Stock(3, 25);
+            s3.formStock_zona(zona3);
+            zona3.formZona_stock(s3);
+            s3.formStock_producto(p1);
+            p1.formPro_stock(s3);
 
-                // Registro actual
-                ZonaPlanta zp = new ZonaPlanta(zpId++, 22.5, 55.0, new java.util.Date(currentTime), new Time(currentTime));
-                zp.formZonap_planta(pla);
-                pla.formPla_zonap(zp);
-                zp.formZonap_zona(z);
-                z.formZona_zonap(zp);
-                em.persist(zp);
 
-                // Relación extra: Planta en otra zona
-                if (i % 2 == 0) {
-                    Zona zExtra = zonas.get((i + 2) % 10);
-                    ZonaPlanta zpExtra = new ZonaPlanta(zpId++, 20.0, 60.0, new java.util.Date(currentTime), new Time(currentTime));
-                    zpExtra.formZonap_planta(pla);
-                    pla.formPla_zonap(zpExtra);
-                    zpExtra.formZonap_zona(zExtra);
-                    zExtra.formZona_zonap(zpExtra);
-                    em.persist(zpExtra);
-                }
 
-                // Registros históricos de temperatura (últimos 3 meses, para consulta 4)
-                if (z.getZona_tipo() == Zona.TipoZona.zona_climatizada) {
-                    for (int m = 1; m <= 3; m++) {
-                        long timeOffset = currentTime - (m * 30L * 24 * 60 * 60 * 1000);
-                        ZonaPlanta zpH = new ZonaPlanta(zpId++, 18.0 + m, 50.0, new java.util.Date(timeOffset), new Time(timeOffset));
-                        zpH.formZonap_planta(pla);
-                        pla.formPla_zonap(zpH);
-                        zpH.formZonap_zona(z);
-                        z.formZona_zonap(zpH);
-                        em.persist(zpH);
-                    }
-                }
-            }
+            // 7. Crear Registros ZonaPlanta
+            ZonaPlanta zp1 = new ZonaPlanta(1, 22.5, 65.0, new Date(), new Time(now));
+            zp1.formZonap_zona(zona1);
+            zona1.formZona_zonap(zp1);
+            zp1.formZonap_planta(pla2);
+            
+            ZonaPlanta zp2 = new ZonaPlanta(2, 24.0, 72.0, new Date(), new Time(now));
+            zp2.formZonap_zona(zona1);
+            zona1.formZona_zonap(zp2);
+            zp2.formZonap_planta(pla3);
 
-            // 8. Relaciones: Stock (Productos en zonas)
-            int stockId = 1;
-            for (int i = 1; i <= 10; i++) {
-                // Stock base
-                Stock s = new Stock(stockId++, 50 * i);
-                Producto p = productos.get(i - 1);
-                Zona z = zonas.get(i - 1);
+            // Persistir los objetos en la base de datos
+            em.persist(emp1);
+            em.persist(emp2);
+            em.persist(emp3);
 
-                s.formStock_producto(p);
-                p.formPro_stock(s);
-                s.formStock_zona(z);
-                z.formZona_stock(s);
-                em.persist(s);
+            em.persist(viv1);
+            em.persist(viv2);
 
-                // Stock extra: Mismo producto en otra zona
-                if (i <= 5) {
-                    Zona zExtra = zonas.get(9 - i);
-                    Stock sExtra = new Stock(stockId++, 20 * i);
-                    sExtra.formStock_producto(p);
-                    p.formPro_stock(sExtra);
-                    sExtra.formStock_zona(zExtra);
-                    zExtra.formZona_stock(sExtra);
-                    em.persist(sExtra);
-                }
-            }
+            em.persist(zona1);
+            em.persist(zona2);
+            em.persist(zona3);
+
+            em.persist(ze1);
+            em.persist(ze2);
+
+            em.persist(p1);
+            em.persist(p2);
+            em.persist(p3);
+
+            em.persist(s1);
+            em.persist(s2);
+            em.persist(s3);
+
+            em.persist(zp1);
+            em.persist(zp2);
 
             em.getTransaction().commit();
-            System.out.println("Base de datos poblada con éxito.");
+            System.out.println("Base de datos poblada correctamente.");
 
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {

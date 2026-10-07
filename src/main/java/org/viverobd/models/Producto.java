@@ -19,16 +19,25 @@ public class Producto implements Serializable {
         TipoProducto(String nombre){
             this.nombre = nombre;
         }
+
+        public static TipoProducto fromNombre(String nombre) {
+            for (TipoProducto tipo : TipoProducto.values()) {
+                if (tipo.nombre.equalsIgnoreCase(nombre)) {
+                    return tipo;
+                }
+            }
+            return null;
+        }
     }
 
-    @Id private String id_producto;
+    @Id private String prod_nombre;
     private String pro_descripcion;
     private float pro_precio;
     private TipoProducto pro_tipo;
 
-    @OneToMany
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "pla_producto", nullable=false)
-        private List<Planta> pro_planta = new ArrayList<>();
+    private Planta pro_planta;
 
     @OneToMany
     @JoinColumn(name = "stock_producto", nullable = false)
@@ -36,20 +45,20 @@ public class Producto implements Serializable {
 
     public Producto(){}
 
-    public Producto(String id, String desc, float precio, TipoProducto tipo){
-        this.id_producto=id;
+    public Producto(String nombre, String desc, float precio, TipoProducto tipo){
+        this.prod_nombre=nombre;
         this.pro_descripcion=desc;
         this.pro_tipo=tipo;
         this.pro_precio=precio;
 
     }
 
-    public void setId_producto(String id_producto) {
-        this.id_producto = id_producto;
+    public void setProd_nombre(String prod_nombre) {
+        this.prod_nombre = prod_nombre;
     }
 
-    public String getId_producto() {
-        return id_producto;
+    public String getProd_nombre() {
+        return prod_nombre;
     }
 
 
@@ -76,9 +85,9 @@ public class Producto implements Serializable {
         this.pro_tipo = pro_tipo;
     }
 
-    public List<Planta> getPro_planta(){return pro_planta;}
-    public void formPro_planta(Planta planta){this.pro_planta.add(planta);}
-    public void dropPro_planta(Planta planta){this.pro_planta.remove(planta);}
+    public Planta getPro_planta(){return pro_planta;}
+    public void formPro_planta(Planta planta){this.pro_planta = planta;}
+    public void dropPro_planta(){this.pro_planta = null;}
 
     public List<Stock> getProd_stock() {return prod_stock;}
     public void formPro_stock(Stock stock){this.prod_stock.add(stock);}

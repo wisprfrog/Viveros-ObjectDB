@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="750.0" prefWidth="1350.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.ZonaEmpleadoController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#7da78c" height="98.0" layoutX="29.0" layoutY="24.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 30; -fx-arc-width: 30;" width="1292.0" />
+      <Text fill="FLORALWHITE" layoutX="371.0" layoutY="94.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ASIGNACIÓN ZONA - EMPLEADO" textAlignment="CENTER">
+         <font>
+            <Font name="Impact" size="52.0" />
+         </font>
+      </Text>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="271.0" layoutX="29.0" layoutY="138.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="351.0" />
+      <Text layoutX="44.0" layoutY="245.0" strokeType="OUTSIDE" strokeWidth="0.0" text="NOMBRE ZONA">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="telefonoEmp" layoutX="41.0" layoutY="348.0" prefHeight="49.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+      </TextField>
+      <Text layoutX="42.0" layoutY="331.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TELÉFONO EMPLEADO">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="nombreZon" layoutX="41.0" layoutY="261.0" prefHeight="41.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+      </TextField>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="504.0" layoutX="389.0" layoutY="222.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="929.0" />
+      <TableView fx:id="tablaZonaE" editable="true" layoutX="413.0" layoutY="238.0" prefHeight="480.0" prefWidth="642.0" style="-fx-background-radius: 20; -fx-border-radius: 20;" />
+      <Button layoutX="1074.0" layoutY="242.0" mnemonicParsing="false" onAction="#agregarZonE" prefHeight="63.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="AGREGAR">
+         <font>
+            <Font name="Berlin Sans FB" size="25.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="72.0" layoutX="392.0" layoutY="138.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="929.0" />
+      <ChoiceBox fx:id="criterio" layoutX="577.0" layoutY="147.0" prefHeight="52.0" prefWidth="156.0" style="-fx-background-radius: 20; -fx-background-color: #FFFAF0; -fx-border-radius: 20;">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </ChoiceBox>
+      <TextField fx:id="parametro" layoutX="744.0" layoutY="149.0" prefHeight="49.0" prefWidth="374.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+      </TextField>
+      <Text layoutX="408.0" layoutY="182.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BUSCAR POR:">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <Button layoutX="1074.0" layoutY="336.0" mnemonicParsing="false" onAction="#modificarZonE" prefHeight="63.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="MODIFICAR">
+         <font>
+            <Font name="Berlin Sans FB" size="25.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1074.0" layoutY="443.0" mnemonicParsing="false" onAction="#eliminarZonE" prefHeight="63.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="ELIMINAR">
+         <font>
+            <Font name="Berlin Sans FB" size="25.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1125.0" layoutY="148.0" mnemonicParsing="false" onAction="#buscarZonE" prefHeight="49.0" prefWidth="174.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="BUSCAR" textAlignment="CENTER">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button layoutX="1074.0" layoutY="629.0" mnemonicParsing="false" onAction="#menuPrincipal" prefHeight="83.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="   MENU&#10;PRINCIPAL">
+         <font>
+            <Font name="Berlin Sans FB" size="25.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="301.0" layoutX="29.0" layoutY="425.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="351.0" />
+      <Text layoutX="44.0" layoutY="469.0" strokeType="OUTSIDE" strokeWidth="0.0" text="FECHA DE ASIGNACIÓN">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <DatePicker fx:id="fechaAsigZonE" layoutX="44.0" layoutY="478.0" prefHeight="49.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0;" />
+      <Text layoutX="44.0" layoutY="560.0" strokeType="OUTSIDE" strokeWidth="0.0" text="FECHA DE SALIDA">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <DatePicker fx:id="fechaSalEmpE" layoutX="44.0" layoutY="570.0" prefHeight="49.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0;" />
+      <TextField fx:id="horaAsigZonE" layoutX="41.0" layoutY="659.0" prefHeight="49.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+      </TextField>
+      <Text layoutX="44.0" layoutY="654.0" strokeType="OUTSIDE" strokeWidth="0.0" text="HORA DE ASIGNACIÓN">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <Text layoutX="47.0" layoutY="161.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CÓDIGO">
+         <font>
+            <Font name="Berlin Sans FB" size="26.0" />
+         </font>
+      </Text>
+      <TextField fx:id="codigoZon" layoutX="41.0" layoutY="167.0" prefHeight="41.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+      </TextField>
+      <Button layoutX="1074.0" layoutY="539.0" mnemonicParsing="false" onAction="#limpiarForm" prefHeight="63.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="LIMPIAR">
+         <font>
+            <Font name="Berlin Sans FB" size="25.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+   </children>
+</AnchorPane>
