@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import javafx.scene.control.Alert;
 
-import javax.swing.*;
 import java.util.*;
 
 public class GenericDAOImpl<T> implements GenericDAO<T> {
@@ -59,6 +58,7 @@ public class GenericDAOImpl<T> implements GenericDAO<T> {
             Object id = em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
             T managedEntity = em.find(entityClass, id);
 
+            System.out.println(managedEntity);
             if (managedEntity == null) {
                 showOperationStatus(TipoOperacion.ELIMINAR, false, "No existe el objeto");
                 return;
@@ -72,6 +72,7 @@ public class GenericDAOImpl<T> implements GenericDAO<T> {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
+            System.out.println("Mal bro");
             showOperationStatus(TipoOperacion.ELIMINAR, false, e.getMessage());
         }
     }

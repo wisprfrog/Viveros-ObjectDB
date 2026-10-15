@@ -42,6 +42,7 @@ public class EmpleadoController {
         configurarTabla();
 
         criterio.getItems().addAll("Nombre", "Teléfono", "INE");
+        parametro.setDisable(true);
         criterio.valueProperty().addListener(this::listenerCriterioBusqueda);
     }
 
@@ -55,9 +56,11 @@ public class EmpleadoController {
         TableColumn<Empleado, String> ineEmpT = new TableColumn<>("INE (CURP)");
         ineEmpT.setCellValueFactory(new PropertyValueFactory<>("emp_ine"));
 
-        tablaEmp.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaEmp.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaEmp.getColumns().clear();
-        tablaEmp.getColumns().addAll(nombreEmpT, telefonoEmpT, ineEmpT);
+        tablaEmp.getColumns().add(nombreEmpT);
+        tablaEmp.getColumns().add(telefonoEmpT);
+        tablaEmp.getColumns().add(ineEmpT);
 
         tablaEmp.setRowFactory(tv -> {
             TableRow<Empleado> row = new TableRow<>();
@@ -79,8 +82,9 @@ public class EmpleadoController {
                 mostrarAlerta("Error", "Ya existe un empleado con ese teléfono.", Alert.AlertType.ERROR);
                 return;
             }
-            empleadoService.agregarEmpleado(tempEmp);
-            limpiarForm(null);
+            if (empleadoService.agregarEmpleado(tempEmp)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -143,8 +147,8 @@ public class EmpleadoController {
 
     @FXML
     void eliminarEmp(ActionEvent event) {
-        if (camposCorrectos()) {
-            Empleado tempEmp = construirEmpleado();
+        if (telefonoCorrecto()) {
+            Empleado tempEmp = new Empleado(telefonoEmp.getText().trim(), null, null);
             Empleado empleadoAEliminar = empleadoService.buscarPorTelefono(tempEmp.getEmp_telefono());
 
             if (empleadoAEliminar == null) {
@@ -154,8 +158,9 @@ public class EmpleadoController {
 
             if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de que desea eliminar al empleado " + empleadoAEliminar.getEmp_nombre() + "?")) return;
 
-            empleadoService.eliminarEmpleado(empleadoAEliminar);
-            limpiarForm(null);
+            if (empleadoService.eliminarEmpleado(empleadoAEliminar)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -172,8 +177,9 @@ public class EmpleadoController {
 
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de que desea actualizar al empleado " + tempEmp.getEmp_nombre() + "?")) return;
             
-            empleadoService.modificarEmpleado(tempEmp);
-            limpiarForm(null);
+            if (empleadoService.modificarEmpleado(tempEmp)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -204,6 +210,9 @@ public class EmpleadoController {
         if (nombreEmp.getText() == null || nombreEmp.getText().trim().isEmpty()) {
             errores.append("- El nombre es obligatorio.\n");
             if (errorNode == null) errorNode = nombreEmp;
+        } else if (!nombreEmp.getText().trim().matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")) {
+            errores.append("- El nombre debe contener solo letras y espacios.\n");
+            if (errorNode == null) errorNode = nombreEmp;
         }
 
         if (telefonoEmp.getText() == null || telefonoEmp.getText().trim().isEmpty()) {
@@ -229,7 +238,25 @@ public class EmpleadoController {
     }
 
     private Empleado construirEmpleado() {
-        return new Empleado(telefonoEmp.getText(), nombreEmp.getText(), ineEmp.getText());
+        return new Empleado(
+                telefonoEmp.getText().trim(),
+                nombreEmp.getText().trim(),
+                ineEmp.getText().trim());
+    }
+
+    private boolean telefonoCorrecto() {
+        String telefono = telefonoEmp.getText();
+        if (telefono == null || telefono.trim().isEmpty()) {
+            mostrarAlerta("Error de llenado", "El teléfono es obligatorio.", Alert.AlertType.ERROR);
+            telefonoEmp.requestFocus();
+            return false;
+        }
+        if (!telefono.trim().matches("\\d+")) {
+            mostrarAlerta("Error de llenado", "El teléfono debe contener solo números.", Alert.AlertType.ERROR);
+            telefonoEmp.requestFocus();
+            return false;
+        }
+        return true;
     }
 
     @FXML

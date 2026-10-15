@@ -2,13 +2,11 @@ package org.viverobd.controllers;
 
 import org.viverobd.services.ProductoService;
 import org.viverobd.services.ProductoServiceImpl;
-import org.viverobd.dao.ProductoDAO;
 import org.viverobd.models.Producto;
 import org.viverobd.models.Producto.TipoProducto;
 import org.viverobd.models.Planta;
 import org.viverobd.models.Planta.TipoPlanta;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
@@ -77,6 +75,8 @@ public class ProductoController {
         criterio.valueProperty().addListener(this::listenerCriterioBusqueda);
 
         configurarTablaBusqueda();
+        listenerCriterioBusqueda(null, null, null);
+        listenerTipoProducto(null, null, null);
     }
 
     @FXML void agregarProd(ActionEvent event) {
@@ -96,8 +96,9 @@ public class ProductoController {
                 nuevaPlanta.formPla_prod(tempProd); //Relacionamos la planta con el producto
             }
 
-            productoService.agregarProducto(tempProd);
-            limpiarForm(null);
+            if (productoService.agregarProducto(tempProd)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -111,8 +112,8 @@ public class ProductoController {
         } else if ("Precio".equalsIgnoreCase(criterioSeleccionado)) {
             // Caso: Búsqueda por rango de precio
             if (validarRangoPrecio()) {
-                double min = Double.parseDouble(precioMin.getText());
-                double max = Double.parseDouble(precioMax.getText());
+                double min = Double.parseDouble(precioMin.getText().trim());
+                double max = Double.parseDouble(precioMax.getText().trim());
                 resultadoBusqueda = productoService.buscarPorRangoPrecio(min, max);
             }
         } else if ("Tipo".equalsIgnoreCase(criterioSeleccionado)) {
@@ -128,7 +129,7 @@ public class ProductoController {
             if (validarParametroBusqueda(criterioSeleccionado)) {
                 Map<String, Object> attrs = new HashMap<>();
                 String campo = "Nombre".equalsIgnoreCase(criterioSeleccionado) ? "prod_nombre" : "pro_descripcion";
-                attrs.put(campo, parametro.getText());
+                attrs.put(campo, parametro.getText().trim());
                 resultadoBusqueda = productoService.buscarPorAtributos(attrs);
             }
         }
@@ -143,13 +144,13 @@ public class ProductoController {
         String minTxt = precioMin.getText();
         String maxTxt = precioMax.getText();
 
-        if (minTxt.isEmpty() || minTxt.trim().isEmpty()) {
+        if (minTxt == null || minTxt.trim().isEmpty()) {
             errores.append("- El precio mínimo es obligatorio.\n");
             if (errorNode == null) errorNode = precioMin;
         } else {
             try {
                 double min = Double.parseDouble(minTxt);
-                if (min < 0) {
+                if (!Double.isFinite(min) || min < 0) {
                     errores.append("- El precio mínimo no puede ser negativo.\n");
                     if (errorNode == null) errorNode = precioMin;
                 }
@@ -159,13 +160,13 @@ public class ProductoController {
             }
         }
 
-        if (maxTxt.isEmpty() || maxTxt.trim().isEmpty()) {
+        if (maxTxt == null || maxTxt.trim().isEmpty()) {
             errores.append("- El precio máximo es obligatorio.\n");
             if (errorNode == null) errorNode = precioMax;
         } else {
             try {
                 double max = Double.parseDouble(maxTxt);
-                if (max < 0) {
+                if (!Double.isFinite(max) || max < 0) {
                     errores.append("- El precio máximo no puede ser negativo.\n");
                     if (errorNode == null) errorNode = precioMax;
                 }
@@ -204,11 +205,12 @@ public class ProductoController {
         StringBuilder errores = new StringBuilder();
 
         if ("Nombre".equalsIgnoreCase(criterio)) {
-            if (val.isEmpty() || !val.matches("[a-zA-Z0-9]+")) {
+            if (val == null || val.trim().isEmpty()
+                    || !val.trim().matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9 ]+")) {
                 errores.append("- El nombre de búsqueda debe ser alfanumérico y no estar vacío.\n");
             }
         } else if ("Descripcion".equalsIgnoreCase(criterio)) {
-            if (val.isEmpty() || val.trim().isEmpty()) {
+            if (val == null || val.trim().isEmpty()) {
                 errores.append("- La descripción de búsqueda no puede estar vacía.\n");
             }
         }
@@ -230,33 +232,23 @@ public class ProductoController {
     }
 
     @FXML void eliminarProd(ActionEvent event) {
-        if(camposCorrectos()){
-            // Primero se construye el objeto Producto a partir de los campos de entrada
-            Producto tempProd = construirProducto();
-
-            // Con su relacion Planta si existe
-            if ("Plantas".equalsIgnoreCase(tipoProd.getValue())) {
-                Planta tempPlanta = construirPlanta();
-                tempProd.formPro_planta(tempPlanta);
-                tempPlanta.formPla_prod(tempProd);
-            }
-
-            // Se comprueba si ese objeto introducido existe en la bd
-            Producto productoAEliminar = productoService.buscarPorId(tempProd.getProd_nombre());
+        if (identificadorProductoCorrecto()) {
+            Producto productoAEliminar = productoService.buscarPorId(nomProd.getText().trim());
 
             if (productoAEliminar == null) {
                 mostrarAlerta("Error", "El producto no existe en la base de datos", Alert.AlertType.ERROR);
                 return;
             }
 
-            String mensajeConfirmacion = "Plantas".equalsIgnoreCase(tipoProd.getValue())
+            String mensajeConfirmacion = productoAEliminar.getPro_planta() != null
                     ? "Esta seguro de eliminar los objetos Producto y Planta seleccionados?"
                     : "Esta seguro de eliminar el objeto Producto seleccionado?";
 
             if (!mostrarConfirmacion("Confirmar eliminacion", mensajeConfirmacion)) return;
 
-            productoService.eliminarProducto(productoAEliminar);
-            limpiarForm(null);
+            if (productoService.eliminarProducto(productoAEliminar)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -277,8 +269,9 @@ public class ProductoController {
                 nuevaPlanta.formPla_prod(tempProd);
             }
 
-            productoService.modificarProducto(tempProd);
-            limpiarForm(null);
+            if (productoService.modificarProducto(tempProd)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -305,12 +298,13 @@ public class ProductoController {
         StringBuilder errores = new StringBuilder();
         javafx.scene.Node errorNode = null;
 
-        if (nomProd.getText().trim().isEmpty() || !nomProd.getText().matches("[a-zA-Z0-9 ]+")) {
+        if (nomProd.getText() == null || nomProd.getText().trim().isEmpty()
+                || !nomProd.getText().trim().matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9 ]+")) {
             errores.append("- El nombre del producto es obligatorio.\n");
             if (errorNode == null) errorNode = nomProd;
         }
 
-        if (descProd.getText().isEmpty() || descProd.getText().trim().isEmpty()) {
+        if (descProd.getText() == null || descProd.getText().trim().isEmpty()) {
             errores.append("- La descripción del producto es obligatoria.\n");
             if (errorNode == null) errorNode = descProd;
         }
@@ -320,13 +314,13 @@ public class ProductoController {
             if (errorNode == null) errorNode = tipoProd;
         }
 
-        if (precioProd.getText().isEmpty() || precioProd.getText().trim().isEmpty()) {
+        if (precioProd.getText() == null || precioProd.getText().trim().isEmpty()) {
             errores.append("- El precio es obligatorio.\n");
             if (errorNode == null) errorNode = precioProd;
         } else {
             try {
                 float precio = Float.parseFloat(precioProd.getText());
-                if (precio < 0) {
+                if (!Float.isFinite(precio) || precio < 0) {
                     errores.append("- El precio no puede ser negativo.\n");
                     if (errorNode == null) errorNode = precioProd;
                 }
@@ -354,7 +348,8 @@ public class ProductoController {
                 if (errorNode == null) errorNode = climaPla;
             } else {
                 try {
-                    Double.parseDouble(climaPla.getText());
+                    double clima = Double.parseDouble(climaPla.getText());
+                    if (!Double.isFinite(clima)) throw new NumberFormatException();
                 } catch (NumberFormatException e) {
                     errores.append("- El clima debe ser un valor numérico.\n");
                     if (errorNode == null) errorNode = climaPla;
@@ -366,7 +361,10 @@ public class ProductoController {
                 if (errorNode == null) errorNode = humedadPla;
             } else {
                 try {
-                    Double.parseDouble(humedadPla.getText());
+                    double humedad = Double.parseDouble(humedadPla.getText());
+                    if (!Double.isFinite(humedad) || humedad < 0 || humedad > 100) {
+                        throw new NumberFormatException();
+                    }
                 } catch (NumberFormatException e) {
                     errores.append("- La humedad debe ser un valor numérico.\n");
                     if (errorNode == null) errorNode = humedadPla;
@@ -378,7 +376,8 @@ public class ProductoController {
                 if (errorNode == null) errorNode = luzPla;
             } else {
                 try {
-                    Double.parseDouble(luzPla.getText());
+                    double luz = Double.parseDouble(luzPla.getText());
+                    if (!Double.isFinite(luz) || luz < 0) throw new NumberFormatException();
                 } catch (NumberFormatException e) {
                     errores.append("- La luz debe ser un valor numérico.\n");
                     if (errorNode == null) errorNode = luzPla;
@@ -479,11 +478,20 @@ public class ProductoController {
             return new javafx.beans.property.SimpleStringProperty("");
         });
 
-        tablaPro.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaPro.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         // Limpiar columnas existentes (si las hay) y añadir las nuevas a la tabla
         tablaPro.getColumns().clear();
-        tablaPro.getColumns().addAll(colNombre, colDescripcion, colPrecio, colTipo, colNombrePlanta, colTipoPlanta, colHumedad, colClima, colLuz, colCuidados);
+        tablaPro.getColumns().add(colNombre);
+        tablaPro.getColumns().add(colDescripcion);
+        tablaPro.getColumns().add(colPrecio);
+        tablaPro.getColumns().add(colTipo);
+        tablaPro.getColumns().add(colNombrePlanta);
+        tablaPro.getColumns().add(colTipoPlanta);
+        tablaPro.getColumns().add(colHumedad);
+        tablaPro.getColumns().add(colClima);
+        tablaPro.getColumns().add(colLuz);
+        tablaPro.getColumns().add(colCuidados);
 
         // Configurar RowFactory para doble clic
         tablaPro.setRowFactory(tv -> {
@@ -612,9 +620,9 @@ public class ProductoController {
 
     private Producto construirProducto(){
         Producto producto = new Producto();
-        producto.setProd_nombre(nomProd.getText());
-        producto.setPro_descripcion(descProd.getText());
-        producto.setPro_precio(Float.parseFloat(precioProd.getText()));
+        producto.setProd_nombre(nomProd.getText().trim());
+        producto.setPro_descripcion(descProd.getText().trim());
+        producto.setPro_precio(Float.parseFloat(precioProd.getText().trim()));
         producto.setPro_tipo(TipoProducto.fromNombre(tipoProd.getValue()));
 
         return producto;
@@ -622,15 +630,26 @@ public class ProductoController {
 
     private Planta construirPlanta(){
         Planta planta = new Planta();
-        planta.setProd_nombre(nomProd.getText());
-        planta.setPla_nombre(nombrePla.getText());
-        planta.setPla_clima(Double.parseDouble(climaPla.getText()));
-        planta.setPla_humedad(Double.parseDouble(humedadPla.getText()));
-        planta.setPla_luz(Double.parseDouble(luzPla.getText()));
-        planta.setPla_cuidados(cuidadosPla.getText());
+        planta.setProd_nombre(nomProd.getText().trim());
+        planta.setPla_nombre(nombrePla.getText().trim());
+        planta.setPla_clima(Double.parseDouble(climaPla.getText().trim()));
+        planta.setPla_humedad(Double.parseDouble(humedadPla.getText().trim()));
+        planta.setPla_luz(Double.parseDouble(luzPla.getText().trim()));
+        planta.setPla_cuidados(cuidadosPla.getText().trim());
         planta.setPla_tipo(TipoPlanta.fromNombre(tipoPla.getValue()));
 
         return planta;
+    }
+
+    private boolean identificadorProductoCorrecto() {
+        String nombre = nomProd.getText();
+        if (nombre == null || nombre.trim().isEmpty()) {
+            mostrarAlerta("Error de llenado", "El nombre del producto es obligatorio.",
+                    Alert.AlertType.ERROR);
+            nomProd.requestFocus();
+            return false;
+        }
+        return true;
     }
 
 

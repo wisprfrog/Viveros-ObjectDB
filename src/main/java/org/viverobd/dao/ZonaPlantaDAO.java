@@ -1,6 +1,8 @@
 package org.viverobd.dao;
 
 import jakarta.persistence.EntityManager;
+import org.viverobd.models.Planta;
+import org.viverobd.models.Zona;
 import org.viverobd.models.ZonaPlanta;
 
 public class ZonaPlantaDAO extends GenericDAOImpl<ZonaPlanta> {
@@ -23,8 +25,23 @@ public class ZonaPlantaDAO extends GenericDAOImpl<ZonaPlanta> {
             zpAnterior.setZonap_humedad(zpActualizada.getZonap_humedad());
             zpAnterior.setZonap_fechaRegistro(zpActualizada.getZonap_fechaRegistro());
             zpAnterior.setZonap_horaRegistro(zpActualizada.getZonap_horaRegistro());
-            zpAnterior.formZonap_zona(zpActualizada.getZonap_zona());
-            zpAnterior.formZonap_planta(zpActualizada.getZonap_planta());
+            if (zpActualizada.getZonap_zona() != null) {
+                Zona zona = em.find(Zona.class, zpActualizada.getZonap_zona().getZona_nombre());
+                if (zona == null) {
+                    throw new IllegalArgumentException("La zona no existe.");
+                }
+                zpAnterior.formZonap_zona(zona);
+            }
+            if (zpActualizada.getZonap_planta() != null) {
+                Planta planta = em.createQuery(
+                                "SELECT p FROM Planta p WHERE p.pla_nombre = :nombre", Planta.class)
+                        .setParameter("nombre", zpActualizada.getZonap_planta().getPla_nombre())
+                        .getResultStream().findFirst().orElse(null);
+                if (planta == null) {
+                    throw new IllegalArgumentException("La planta no existe.");
+                }
+                zpAnterior.formZonap_planta(planta);
+            }
 
             em.getTransaction().commit();
             showOperationStatus(TipoOperacion.ACTUALIZAR, true);

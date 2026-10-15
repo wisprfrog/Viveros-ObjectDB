@@ -3,7 +3,6 @@ package org.viverobd.dao;
 import jakarta.persistence.EntityManager;
 import org.viverobd.models.Planta;
 
-import javax.swing.*;
 
 public class PlantaDAO extends GenericDAOImpl<Planta>{
     public PlantaDAO(EntityManager em, Class<Planta> entityClass) {

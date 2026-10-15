@@ -36,7 +36,7 @@ public class Producto implements Serializable {
     private TipoProducto pro_tipo;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "pla_producto", nullable=false)
+    @JoinColumn(name = "pla_producto", nullable=true)
     private Planta pro_planta;
 
     @OneToMany

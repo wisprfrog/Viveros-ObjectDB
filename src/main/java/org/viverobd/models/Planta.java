@@ -3,7 +3,6 @@ package org.viverobd.models;
 import java.io.Serial;
 import java.io.Serializable;
 import jakarta.persistence.*;
-import java.util.*;
 
 @Entity
 public class Planta implements Serializable{
@@ -40,8 +39,7 @@ public class Planta implements Serializable{
     private String pla_cuidados;
     private TipoPlanta pla_tipo;
 
-    @OneToOne
-    @JoinColumn(name="pro_planta", nullable = false)
+    @OneToOne(mappedBy = "pro_planta")
     private Producto pla_producto;
 
     public Planta(){}

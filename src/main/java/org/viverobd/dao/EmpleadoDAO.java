@@ -21,7 +21,6 @@ public class EmpleadoDAO extends GenericDAOImpl<Empleado> {
 
             empAnterior.setEmp_nombre(empActualizado.getEmp_nombre());
             empAnterior.setEmp_ine(empActualizado.getEmp_ine());
-            empAnterior.formEmp_viv(empActualizado.getEmp_viv());
 
             em.getTransaction().commit();
             showOperationStatus(TipoOperacion.ACTUALIZAR, true);

@@ -4,7 +4,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import jakarta.persistence.*;
-import java.util.*;
 
 @Entity
 public class ZonaEmpleado implements Serializable{

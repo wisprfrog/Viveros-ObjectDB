@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface ProductoService {
-    void agregarProducto(Producto producto);
-    void modificarProducto(Producto producto);
-    void eliminarProducto(Producto producto);
+    boolean agregarProducto(Producto producto);
+    boolean modificarProducto(Producto producto);
+    boolean eliminarProducto(Producto producto);
     Producto buscarPorId(String id);
     List<Producto> buscarTodos();
     List<Producto> buscarPorRangoPrecio(double min, double max);

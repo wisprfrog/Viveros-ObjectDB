@@ -36,6 +36,7 @@ public class StockController {
     private StockService stockService;
     private List<Zona> listaZonas;
     private List<Producto> listaProductos;
+    private Integer stockSeleccionadoId;
 
     @FXML
     void initialize() {
@@ -63,18 +64,18 @@ public class StockController {
         TableColumn<Stock, String> nombreZonaT = new TableColumn<>("NOMBRE DE LA ZONA");
         nombreZonaT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStock_zona().getZona_nombre()));
 
-        TableColumn<Stock, String> idProdT = new TableColumn<>("ID DEL PRODUCTO");
-        idProdT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStock_producto().getProd_nombre()));
-
         TableColumn<Stock, String> nombreProdT = new TableColumn<>("NOMBRE DEL PRODUCTO");
         nombreProdT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStock_producto().getProd_nombre()));
 
         TableColumn<Stock, Integer> existenciaStockT = new TableColumn<>("CANTIDAD EN EXISTENCIA");
         existenciaStockT.setCellValueFactory(new PropertyValueFactory<>("stock_cantidad"));
 
-        tablaZonaP.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaZonaP.setEditable(false);
+        tablaZonaP.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaZonaP.getColumns().clear();
-        tablaZonaP.getColumns().addAll(nombreZonaT, idProdT, nombreProdT, existenciaStockT);
+        tablaZonaP.getColumns().add(nombreZonaT);
+        tablaZonaP.getColumns().add(nombreProdT);
+        tablaZonaP.getColumns().add(existenciaStockT);
 
         tablaZonaP.setRowFactory(tv -> {
             TableRow<Stock> row = new TableRow<>();
@@ -104,6 +105,7 @@ public class StockController {
     }
 
     private void cargarStockEnFormulario(Stock s) {
+        stockSeleccionadoId = s.getStock_id();
         nomZon2.setValue(s.getStock_zona().getZona_nombre());
         nomProd2.setValue(s.getStock_producto().getProd_nombre());
         nombreZon.setText(s.getStock_zona().getZona_nombre());
@@ -113,74 +115,48 @@ public class StockController {
 
     @FXML
     void agregarSto(ActionEvent event) {
-        if (camposCorrectos()) {
+        if (camposCorrectos(true)) {
             Stock tempSto = construirStock();
             if (tempSto == null) return;
 
-            // Verificar si ya existe stock para esa zona y producto
-            Map<String, Object> attrs = new HashMap<>();
-            attrs.put("stock_zona.zona_nombre", tempSto.getStock_zona().getZona_nombre());
-            attrs.put("stock_producto.prod_nombre", tempSto.getStock_producto().getProd_nombre());
-            List<Stock> existente = stockService.buscarStock(attrs);
-
-            if (existente != null && !existente.isEmpty()) {
-                mostrarAlerta("Error", "Ya existe un registro de stock para este producto en esta zona.", Alert.AlertType.ERROR);
-                return;
+            if (stockService.agregarStock(tempSto)) {
+                limpiarForm(null);
             }
-
-            stockService.agregarStock(tempSto);
-            limpiarForm(null);
         }
     }
 
     @FXML
     void modificarSto(ActionEvent event) {
-        if (camposCorrectos()) {
+        if (camposCorrectos(true)) {
+            if (stockSeleccionadoId == null) {
+                mostrarAlerta("Error", "Seleccione un registro de stock de la tabla para modificarlo.", Alert.AlertType.ERROR);
+                return;
+            }
             Stock tempSto = construirStock();
             if (tempSto == null) return;
 
-            Map<String, Object> attrs = new HashMap<>();
-            attrs.put("stock_zona.zona_nombre", tempSto.getStock_zona().getZona_nombre());
-            attrs.put("stock_producto.prod_nombre", tempSto.getStock_producto().getProd_nombre());
-            List<Stock> existente = stockService.buscarStock(attrs);
-
-            if (existente == null || existente.isEmpty()) {
-                mostrarAlerta("Error", "El registro de stock no existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
-            }
-
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de actualizar el registro de stock seleccionado?")) return;
 
-            Stock stockAModificar = existente.get(0);
-            stockAModificar.setStock_cantidad(tempSto.getStock_cantidad());
-
-            stockService.modificarStock(stockAModificar);
-            limpiarForm(null);
+            tempSto.setStock_id(stockSeleccionadoId);
+            if (stockService.modificarStock(tempSto)) {
+                limpiarForm(null);
+            }
         }
     }
 
     @FXML
     void eliminarSto(ActionEvent event) {
-        if (camposCorrectos()) {
-            Stock tempSto = construirStock();
-            if (tempSto == null) return;
-
-            Map<String, Object> attrs = new HashMap<>();
-            attrs.put("stock_zona.zona_nombre", tempSto.getStock_zona().getZona_nombre());
-            attrs.put("stock_producto.prod_nombre", tempSto.getStock_producto().getProd_nombre());
-            List<Stock> existente = stockService.buscarStock(attrs);
-
-            if (existente == null || existente.isEmpty()) {
-                mostrarAlerta("Error", "El registro de stock no existe en la base de datos.", Alert.AlertType.ERROR);
+        if (camposCorrectos(false)) {
+            if (stockSeleccionadoId == null) {
+                mostrarAlerta("Error", "Seleccione un registro de stock de la tabla para eliminarlo.", Alert.AlertType.ERROR);
                 return;
             }
 
-            Stock stockAEliminar = existente.get(0);
-
             if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar el registro de stock seleccionado?")) return;
 
-            stockService.eliminarStock(stockAEliminar);
-            limpiarForm(null);
+            if (stockService.eliminarStock(new Stock(stockSeleccionadoId, 0))) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -195,9 +171,9 @@ public class StockController {
             if (validarParametroBusqueda(crit)) {
                 Map<String, Object> attrs = new HashMap<>();
                 if ("Zona".equals(crit)) {
-                    attrs.put("stock_zona.zona_nombre", parametro.getText());
+                    attrs.put("stock_zona.zona_nombre", parametro.getText().trim());
                 } else {
-                    attrs.put("stock_producto.prod_nombre", parametro.getText());
+                    attrs.put("stock_producto.prod_nombre", parametro.getText().trim());
                 }
                 resultados = stockService.buscarStock(attrs);
             } else {
@@ -217,11 +193,12 @@ public class StockController {
         nomProd2.getSelectionModel().clearSelection();
         parametro.clear();
         criterio.getSelectionModel().clearSelection();
+        stockSeleccionadoId = null;
         tablaZonaP.getSelectionModel().clearSelection();
         tablaZonaP.getItems().clear();
     }
 
-    private boolean camposCorrectos() {
+    private boolean camposCorrectos(boolean requiereCantidad) {
         StringBuilder errores = new StringBuilder();
         Node errorNode = null;
 
@@ -235,12 +212,16 @@ public class StockController {
             if (errorNode == null) errorNode = nombreProd;
         }
 
-        if (cantidadSto.getText().isEmpty()) {
+        if (!requiereCantidad) {
+            return validarErrores(errores, errorNode);
+        }
+
+        if (cantidadSto.getText() == null || cantidadSto.getText().trim().isEmpty()) {
             errores.append("- La cantidad es obligatoria.\n");
             if (errorNode == null) errorNode = cantidadSto;
         } else {
             try {
-                int cant = Integer.parseInt(cantidadSto.getText());
+                int cant = Integer.parseInt(cantidadSto.getText().trim());
                 if (cant < 0) {
                     errores.append("- La cantidad no puede ser negativa.\n");
                     if (errorNode == null) errorNode = cantidadSto;
@@ -251,6 +232,10 @@ public class StockController {
             }
         }
 
+        return validarErrores(errores, errorNode);
+    }
+
+    private boolean validarErrores(StringBuilder errores, Node errorNode) {
         if (errores.length() > 0) {
             mostrarAlerta("Error de llenado", "Por favor corrija los siguientes errores:\n" + errores.toString(), Alert.AlertType.ERROR);
             if (errorNode != null) errorNode.requestFocus();
@@ -269,11 +254,8 @@ public class StockController {
         }
 
         Stock stock = new Stock();
-        // Usar un ID basado en hash o similar si no hay campo en el form,
-        // o dejar que el service/DAO maneje la identidad si se prefiere.
-        // Aquí mantenemos la lógica de generar uno si es nuevo, pero para buscar usamos zona/producto.
-        stock.setStock_id((int) (System.currentTimeMillis() & 0xfffffff));
-        stock.setStock_cantidad(Integer.parseInt(cantidadSto.getText()));
+        stock.setStock_id(0);
+        stock.setStock_cantidad(Integer.parseInt(cantidadSto.getText().trim()));
         stock.formStock_zona(zona);
         stock.formStock_producto(producto);
 

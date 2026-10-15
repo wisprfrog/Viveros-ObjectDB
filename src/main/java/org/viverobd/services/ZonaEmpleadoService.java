@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface ZonaEmpleadoService {
-    void agregarZonaEmpleado(ZonaEmpleado zonaEmpleado);
-    void modificarZonaEmpleado(ZonaEmpleado zonaEmpleado);
-    void eliminarZonaEmpleado(ZonaEmpleado zonaEmpleado);
+    boolean agregarZonaEmpleado(ZonaEmpleado zonaEmpleado);
+    boolean modificarZonaEmpleado(ZonaEmpleado zonaEmpleado);
+    boolean eliminarZonaEmpleado(ZonaEmpleado zonaEmpleado);
     ZonaEmpleado buscarPorId(String id);
     List<ZonaEmpleado> buscarPorAtributos(Map<String, Object> atributos);
     List<ZonaEmpleado> buscarTodos();
