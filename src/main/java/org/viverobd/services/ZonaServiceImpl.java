@@ -95,14 +95,13 @@ public class ZonaServiceImpl implements ZonaService {
                 zonaDAO.showOperationStatus(null, false, "La zona no existe en la base de datos.");
                 return false;
             }
-            long dependencias = em.createQuery(
-                            "SELECT COUNT(z) FROM ZonaEmpleado z WHERE z.zonae_zona = :zona", Long.class)
-                    .setParameter("zona", managedZona).getSingleResult()
-                    + em.createQuery("SELECT COUNT(z) FROM ZonaPlanta z WHERE z.zonap_zona = :zona", Long.class)
-                    .setParameter("zona", managedZona).getSingleResult()
-                    + em.createQuery("SELECT COUNT(s) FROM Stock s WHERE s.stock_zona = :zona", Long.class)
+            long empleados = em.createQuery("SELECT COUNT(z) FROM ZonaEmpleado z WHERE z.zonae_zona = :zona", Long.class)
                     .setParameter("zona", managedZona).getSingleResult();
-            if (dependencias > 0) {
+            long plantas = em.createQuery("SELECT COUNT(z) FROM ZonaPlanta z WHERE z.zonap_zona = :zona", Long.class)
+                    .setParameter("zona", managedZona).getSingleResult();
+            long stocks = em.createQuery("SELECT COUNT(s) FROM Stock s WHERE s.stock_zona = :zona", Long.class)
+                    .setParameter("zona", managedZona).getSingleResult();
+            if (EliminacionRules.zonaTieneRelaciones(empleados, plantas, stocks)) {
                 zonaDAO.showOperationStatus(null, false, "No se puede eliminar una zona con relaciones de empleados, plantas o stock.");
                 return false;
             }

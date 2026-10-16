@@ -361,12 +361,13 @@ public class ProductoController {
                 if (errorNode == null) errorNode = humedadPla;
             } else {
                 try {
-                    double humedad = Double.parseDouble(humedadPla.getText());
+                    double humedad = Double.parseDouble(humedadPla.getText().trim());
                     if (!Double.isFinite(humedad) || humedad < 0 || humedad > 100) {
-                        throw new NumberFormatException();
+                        errores.append("- La humedad debe estar entre 0 y 100.\n");
+                        if (errorNode == null) errorNode = humedadPla;
                     }
                 } catch (NumberFormatException e) {
-                    errores.append("- La humedad debe ser un valor numérico.\n");
+                    errores.append("- La humedad debe ser un valor numérico válido.\n");
                     if (errorNode == null) errorNode = humedadPla;
                 }
             }

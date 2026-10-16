@@ -129,7 +129,7 @@ public class StockServiceImpl implements StockService {
             }
             // Regla: Un stock no puede ser eliminado si tiene productos (cantidad > 0)
             Stock managedStock = em.find(Stock.class, stock.getStock_id());
-            if (managedStock != null && managedStock.getStock_cantidad() > 0) {
+            if (managedStock != null && !EliminacionRules.stockPuedeEliminarse(managedStock.getStock_cantidad())) {
                 stockDAO.showOperationStatus(null, false, "No se puede eliminar un stock que todavía tiene existencias.");
                 return false;
             }

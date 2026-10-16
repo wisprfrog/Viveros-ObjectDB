@@ -101,9 +101,20 @@ public class ProductoServiceImpl implements ProductoService {
                             "WHERE s.stock_producto = :producto", Long.class)
                     .setParameter("producto", managed)
                     .getSingleResult();
-            if (stocks > 0) {
+            long relacionesZonaPlanta = 0;
+            if (managed.getPro_planta() != null) {
+                relacionesZonaPlanta = em.createQuery(
+                                "SELECT COUNT(zp) FROM ZonaPlanta zp " +
+                                "WHERE zp.zonap_planta = :planta", Long.class)
+                        .setParameter("planta", managed.getPro_planta())
+                        .getSingleResult();
+            }
+            if (EliminacionRules.productoTieneRelaciones(stocks, relacionesZonaPlanta)) {
+                String mensaje = stocks > 0
+                        ? "No se puede eliminar una planta o producto con stock asociado."
+                        : "No se puede eliminar una planta que tiene relaciones con zonas.";
                 dao.showOperationStatus(GenericDAO.TipoOperacion.ELIMINAR, false,
-                        "No se puede eliminar una planta o producto con stock asociado.");
+                        mensaje);
                 return false;
             }
             dao.delete(managed);

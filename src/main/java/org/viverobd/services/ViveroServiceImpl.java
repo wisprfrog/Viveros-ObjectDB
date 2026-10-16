@@ -87,7 +87,7 @@ public class ViveroServiceImpl implements ViveroService {
                             "SELECT COUNT(z) FROM Zona z WHERE z.zona_viv = :vivero", Long.class)
                     .setParameter("vivero", managedVivero)
                     .getSingleResult();
-            if (zonas > 0) {
+            if (EliminacionRules.viveroTieneRelaciones(zonas, 0)) {
                 viveroDAO.showOperationStatus(null, false, "No se puede eliminar un vivero que tiene zonas asociadas.");
                 return false;
             }
@@ -95,7 +95,7 @@ public class ViveroServiceImpl implements ViveroService {
                             "SELECT COUNT(e) FROM Empleado e WHERE e.emp_viv = :vivero", Long.class)
                     .setParameter("vivero", managedVivero)
                     .getSingleResult();
-            if (empleados > 0) {
+            if (EliminacionRules.viveroTieneRelaciones(0, empleados)) {
                 viveroDAO.showOperationStatus(null, false, "No se puede eliminar un vivero que tiene un empleado asociado.");
                 return false;
             }

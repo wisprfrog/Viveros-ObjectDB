@@ -88,7 +88,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                             "WHERE ze.zonae_emp = :empleado", Long.class)
                     .setParameter("empleado", managed)
                     .getSingleResult();
-            if (asignaciones > 0) {
+            if (EliminacionRules.empleadoTieneRelaciones(asignaciones, 0)) {
                 throw new RuntimeException("No se puede eliminar un empleado con zonas asignadas.");
             }
 
@@ -99,7 +99,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                             "WHERE v.viv_emp = :empleado", Long.class)
                     .setParameter("empleado", managed)
                     .getSingleResult();
-            if (viverosAsignados > 0) {
+            if (EliminacionRules.empleadoTieneRelaciones(0, viverosAsignados)) {
                 throw new RuntimeException("No se puede eliminar un empleado asignado como responsable de un vivero.");
             }
 

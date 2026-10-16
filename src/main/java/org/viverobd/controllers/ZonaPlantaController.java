@@ -232,7 +232,12 @@ public class ZonaPlantaController {
                         attrs.put("zonap_temperatura", Double.parseDouble(param));
                         break;
                     case "Humedad":
-                        attrs.put("zonap_humedad", Double.parseDouble(param));
+                        double humedad = Double.parseDouble(param);
+                        if (humedad < 0 || humedad > 100 || !Double.isFinite(humedad)) {
+                            mostrarErrorBusqueda("- La humedad debe estar entre 0 y 100.", parametro);
+                            return;
+                        }
+                        attrs.put("zonap_humedad", humedad);
                         break;
                 }
                 resultados = zonaPlantaService.buscarPorAtributos(attrs);
@@ -294,10 +299,11 @@ public class ZonaPlantaController {
             try {
                 double humedad = Double.parseDouble(humedadZonP.getText().trim());
                 if (!Double.isFinite(humedad) || humedad < 0 || humedad > 100) {
-                    throw new NumberFormatException();
+                    errores.append("- La humedad debe estar entre 0 y 100.\n");
+                    if (errorNode == null) errorNode = humedadZonP;
                 }
             } catch (NumberFormatException e) {
-                errores.append("- La humedad debe ser un número.\n");
+                errores.append("- La humedad debe ser un número válido.\n");
                 if (errorNode == null) errorNode = humedadZonP;
             }
         }
@@ -359,7 +365,12 @@ public class ZonaPlantaController {
         }
         if ("Temperatura".equals(criterio) || "Humedad".equals(criterio)) {
             try {
-                Double.parseDouble(val);
+                double numero = Double.parseDouble(val.trim());
+                if ("Humedad".equals(criterio)
+                        && (!Double.isFinite(numero) || numero < 0 || numero > 100)) {
+                    mostrarErrorBusqueda("- La humedad debe estar entre 0 y 100.", parametro);
+                    return false;
+                }
             } catch (NumberFormatException e) {
                 mostrarErrorBusqueda("- Debe ingresar un número válido.", parametro);
                 return false;
