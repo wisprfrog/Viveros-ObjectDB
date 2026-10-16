@@ -1,7 +1,9 @@
 package org.viverobd.dao;
 
 import jakarta.persistence.EntityManager;
+import org.viverobd.models.Producto;
 import org.viverobd.models.Stock;
+import org.viverobd.models.Zona;
 
 public class StockDAO extends GenericDAOImpl<Stock> {
     public StockDAO(EntityManager em, Class<Stock> entityClass) {
@@ -20,8 +22,24 @@ public class StockDAO extends GenericDAOImpl<Stock> {
             em.getTransaction().begin();
 
             stockAnterior.setStock_cantidad(stockActualizado.getStock_cantidad());
-            stockAnterior.formStock_zona(stockActualizado.getStock_zona());
-            stockAnterior.formStock_producto(stockActualizado.getStock_producto());
+            if (stockActualizado.getStock_zona() != null) {
+                Zona zona = em.find(Zona.class, stockActualizado.getStock_zona().getZona_nombre());
+                if (zona == null) {
+                    em.getTransaction().rollback();
+                    showOperationStatus(TipoOperacion.ACTUALIZAR, false, "La zona no existe.");
+                    return;
+                }
+                stockAnterior.formStock_zona(zona);
+            }
+            if (stockActualizado.getStock_producto() != null) {
+                Producto producto = em.find(Producto.class, stockActualizado.getStock_producto().getProd_nombre());
+                if (producto == null) {
+                    em.getTransaction().rollback();
+                    showOperationStatus(TipoOperacion.ACTUALIZAR, false, "El producto no existe.");
+                    return;
+                }
+                stockAnterior.formStock_producto(producto);
+            }
 
             em.getTransaction().commit();
             showOperationStatus(TipoOperacion.ACTUALIZAR, true);

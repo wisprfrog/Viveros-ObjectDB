@@ -14,8 +14,8 @@ public class Empleado implements Serializable {
     private String emp_nombre;
     private String emp_ine;
 
-    @OneToOne
-    @JoinColumn(name = "viv_emp", nullable = false)
+    @OneToOne(optional = true)
+    @JoinColumn(name = "viv_emp", nullable = true)
         private Vivero emp_viv;
 
     @OneToMany

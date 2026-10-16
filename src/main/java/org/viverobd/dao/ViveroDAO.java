@@ -21,7 +21,10 @@ public class ViveroDAO extends GenericDAOImpl<Vivero> {
 
             vivAnterior.setViv_nombre(vivActualizado.getViv_nombre());
             vivAnterior.setViv_direccion(vivActualizado.getViv_direccion());
-            vivAnterior.formViv_emp(vivActualizado.getViv_emp());
+            if (vivActualizado.getViv_emp() != null) {
+                vivAnterior.formViv_emp(em.find(org.viverobd.models.Empleado.class,
+                        vivActualizado.getViv_emp().getEmp_telefono()));
+            }
 
             em.getTransaction().commit();
             showOperationStatus(TipoOperacion.ACTUALIZAR, true);

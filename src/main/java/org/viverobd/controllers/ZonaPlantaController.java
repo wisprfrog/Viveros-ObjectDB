@@ -81,10 +81,12 @@ public class ZonaPlantaController {
 
     private void configurarTabla() {
         TableColumn<ZonaPlanta, String> nombreZonaT = new TableColumn<>("NOMBRE DE LA ZONA");
-        nombreZonaT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getZonap_zona().getZona_nombre()));
+        nombreZonaT.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getZonap_zona() == null ? "" : cellData.getValue().getZonap_zona().getZona_nombre()));
 
         TableColumn<ZonaPlanta, String> nombrePlaT = new TableColumn<>("NOMBRE DE LA PLANTA");
-        nombrePlaT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getZonap_planta().getPla_nombre()));
+        nombrePlaT.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getZonap_planta() == null ? "" : cellData.getValue().getZonap_planta().getPla_nombre()));
 
         TableColumn<ZonaPlanta, Double> temperaturaZonPT = new TableColumn<>("TEMPERATURA (°C)");
         temperaturaZonPT.setCellValueFactory(new PropertyValueFactory<>("zonap_temperatura"));
@@ -93,14 +95,21 @@ public class ZonaPlantaController {
         humendadZonPT.setCellValueFactory(new PropertyValueFactory<>("zonap_humedad"));
 
         TableColumn<ZonaPlanta, String> fechaRegZonPT = new TableColumn<>("FECHA DE REGISTRO");
-        fechaRegZonPT.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getZonap_fechaRegistro().toString()));
+        fechaRegZonPT.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getZonap_fechaRegistro() == null ? "" : cellData.getValue().getZonap_fechaRegistro().toString()));
 
         TableColumn<ZonaPlanta, String> horaRegZonPT = new TableColumn<>("HORA DE REGISTRO");
         horaRegZonPT.setCellValueFactory(new PropertyValueFactory<>("zonap_horaRegistro"));
 
-        tablaZonaP.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaZonaP.setEditable(false);
+        tablaZonaP.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaZonaP.getColumns().clear();
-        tablaZonaP.getColumns().addAll(nombreZonaT, nombrePlaT, temperaturaZonPT, humendadZonPT, fechaRegZonPT, horaRegZonPT);
+        tablaZonaP.getColumns().add(nombreZonaT);
+        tablaZonaP.getColumns().add(nombrePlaT);
+        tablaZonaP.getColumns().add(temperaturaZonPT);
+        tablaZonaP.getColumns().add(humendadZonPT);
+        tablaZonaP.getColumns().add(fechaRegZonPT);
+        tablaZonaP.getColumns().add(horaRegZonPT);
 
         tablaZonaP.setRowFactory(tv -> {
             TableRow<ZonaPlanta> row = new TableRow<>();
@@ -157,11 +166,9 @@ public class ZonaPlantaController {
             ZonaPlanta tempZP = construirZonaPlanta();
             if (tempZP == null) return;
 
-            // Al ser ID generado, no verificamos por ID manual,
-            // pero podríamos verificar si ya existe un registro idéntico en ese instante.
-            tempZP.setZonap_id(new Random().nextInt(1000000));
-            zonaPlantaService.registrarZonaPlanta(tempZP);
-            limpiarForm(null);
+            if (zonaPlantaService.registrarZonaPlanta(tempZP)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -180,8 +187,9 @@ public class ZonaPlantaController {
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de actualizar el registro seleccionado?"))
                 return;
 
-            zonaPlantaService.actualizarZonaPlanta(tempZP);
-            limpiarForm(null);
+            if (zonaPlantaService.actualizarZonaPlanta(tempZP)) {
+                limpiarForm(null);
+            }
         }
     }
 
@@ -197,8 +205,9 @@ public class ZonaPlantaController {
         ZonaPlanta zeAEliminar = new ZonaPlanta();
         zeAEliminar.setZonap_id(currentId);
 
-        zonaPlantaService.eliminarZonaPlanta(zeAEliminar);
-        limpiarForm(null);
+        if (zonaPlantaService.eliminarZonaPlanta(zeAEliminar)) {
+            limpiarForm(null);
+        }
     }
 
     @FXML
@@ -211,7 +220,7 @@ public class ZonaPlantaController {
         } else {
             if (validarParametroBusqueda(crit)) {
                 Map<String, Object> attrs = new HashMap<>();
-                String param = parametro.getText();
+                String param = parametro.getText().trim();
                 switch (crit) {
                     case "Zona":
                         attrs.put("zonap_zona.zona_nombre", param);
@@ -245,6 +254,7 @@ public class ZonaPlantaController {
         horaRegZonP.clear();
         parametro.clear();
         criterio.getSelectionModel().clearSelection();
+        parametro.setDisable(true);
         tablaZonaP.getSelectionModel().clearSelection();
         tablaZonaP.getItems().clear();
         currentId = -1;
@@ -254,12 +264,12 @@ public class ZonaPlantaController {
         StringBuilder errores = new StringBuilder();
         Node errorNode = null;
 
-        if (nombreZon.getText().isEmpty()) {
+        if (nombreZon.getText() == null || nombreZon.getText().trim().isEmpty()) {
             errores.append("- El nombre de la zona es obligatorio.\n");
             if (errorNode == null) errorNode = nombreZon;
         }
 
-        if (nombrePlan.getText().isEmpty()) {
+        if (nombrePlan.getText() == null || nombrePlan.getText().trim().isEmpty()) {
             errores.append("- El nombre de la planta es obligatorio.\n");
             if (errorNode == null) errorNode = nombrePlan;
         }
@@ -269,7 +279,8 @@ public class ZonaPlantaController {
             if (errorNode == null) errorNode = temperaturaZonP;
         } else {
             try {
-                Double.parseDouble(temperaturaZonP.getText());
+                double temperatura = Double.parseDouble(temperaturaZonP.getText().trim());
+                if (!Double.isFinite(temperatura)) throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 errores.append("- La temperatura debe ser un número.\n");
                 if (errorNode == null) errorNode = temperaturaZonP;
@@ -281,7 +292,10 @@ public class ZonaPlantaController {
             if (errorNode == null) errorNode = humedadZonP;
         } else {
             try {
-                Double.parseDouble(humedadZonP.getText());
+                double humedad = Double.parseDouble(humedadZonP.getText().trim());
+                if (!Double.isFinite(humedad) || humedad < 0 || humedad > 100) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException e) {
                 errores.append("- La humedad debe ser un número.\n");
                 if (errorNode == null) errorNode = humedadZonP;
@@ -293,12 +307,12 @@ public class ZonaPlantaController {
             if (errorNode == null) errorNode = fechaRegZonP;
         }
 
-        if (horaRegZonP.getText().isEmpty()) {
+        if (horaRegZonP.getText() == null || horaRegZonP.getText().trim().isEmpty()) {
             errores.append("- La hora de registro es obligatoria.\n");
             if (errorNode == null) errorNode = horaRegZonP;
         } else {
             try {
-                Time.valueOf(horaRegZonP.getText());
+                Time.valueOf(horaRegZonP.getText().trim());
             } catch (IllegalArgumentException e) {
                 errores.append("- La hora debe tener el formato HH:mm:ss.\n");
                 if (errorNode == null) errorNode = horaRegZonP;
@@ -314,10 +328,10 @@ public class ZonaPlantaController {
     }
 
     private ZonaPlanta construirZonaPlanta() {
-        Zona zona = zonaService.buscarPorId(nombreZon.getText());
+        Zona zona = zonaService.buscarPorId(nombreZon.getText().trim());
         Planta planta = null;
         if (listaPlantas != null) {
-            planta = listaPlantas.stream().filter(p -> p.getPla_nombre().equals(nombrePlan.getText())).findFirst().orElse(null);
+            planta = listaPlantas.stream().filter(p -> p.getPla_nombre().equals(nombrePlan.getText().trim())).findFirst().orElse(null);
         }
 
         if (zona == null || planta == null) {
@@ -325,10 +339,10 @@ public class ZonaPlantaController {
             return null;
         }
 
-        double temp = Double.parseDouble(temperaturaZonP.getText());
-        double hum = Double.parseDouble(humedadZonP.getText());
+        double temp = Double.parseDouble(temperaturaZonP.getText().trim());
+        double hum = Double.parseDouble(humedadZonP.getText().trim());
         java.sql.Date date = java.sql.Date.valueOf(fechaRegZonP.getValue());
-        Time time = Time.valueOf(horaRegZonP.getText());
+        Time time = Time.valueOf(horaRegZonP.getText().trim());
 
         ZonaPlanta zp = new ZonaPlanta(0, temp, hum, date, time);
         zp.formZonap_zona(zona);

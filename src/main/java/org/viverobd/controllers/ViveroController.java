@@ -59,9 +59,12 @@ public class ViveroController {
         TableColumn<Vivero, String> direccionVivT = new TableColumn<>("Dirección");
         direccionVivT.setCellValueFactory(new PropertyValueFactory<>("viv_direccion"));
 
-        tablaViv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaViv.setEditable(false);
+        tablaViv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaViv.getColumns().clear();
-        tablaViv.getColumns().addAll(nombreVivT, telefonoVivT, direccionVivT);
+        tablaViv.getColumns().add(nombreVivT);
+        tablaViv.getColumns().add(telefonoVivT);
+        tablaViv.getColumns().add(direccionVivT);
 
         // Configurar RowFactory para doble clic
         tablaViv.setRowFactory(tv -> {
@@ -86,47 +89,42 @@ public class ViveroController {
     void agregarViv(ActionEvent event) {
         if (camposCorrectos()) {
             Vivero nuevo = construirVivero();
-            Vivero existente = viveroService.buscarPorId(nuevo.getViv_telefono());
-            if (existente != null) {
-                mostrarAlerta("Error", "Ya existe un vivero con ese número de teléfono.", Alert.AlertType.ERROR);
-                return;
+            if (viveroService.agregarVivero(nuevo)) {
+                limpiarForm(null);
             }
-
-            viveroService.agregarVivero(nuevo);
-            limpiarForm(null);
         }
     }
 
     @FXML
     void modificarViv(ActionEvent event) {
         if (camposCorrectos()) {
-            Vivero tempViv = construirVivero();
-            Vivero existente = viveroService.buscarPorId(tempViv.getViv_telefono());
-            if (existente == null) {
-                mostrarAlerta("Error", "El vivero no existe en la base de datos.", Alert.AlertType.ERROR);
+            Vivero seleccionado = tablaViv.getSelectionModel().getSelectedItem();
+            if (seleccionado == null) {
+                mostrarAlerta("Error", "Seleccione un vivero de la tabla para modificarlo.", Alert.AlertType.ERROR);
                 return;
             }
+            Vivero tempViv = construirVivero();
+            tempViv.setViv_telefono(seleccionado.getViv_telefono());
 
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de actualizar el objeto Vivero seleccionado?")) return;
 
-            viveroService.modificarVivero(tempViv);
-            limpiarForm(null);
+            if (viveroService.modificarVivero(tempViv)) {
+                limpiarForm(null);
+            }
         }
     }
 
     @FXML
     void eliminarViv(ActionEvent event) {
-        if (camposCorrectos()) {
-            Vivero tempViv = construirVivero();
-            Vivero existente = viveroService.buscarPorId(tempViv.getViv_telefono());
-            if (existente == null) {
-                mostrarAlerta("Error", "El vivero no existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
-            }
+        Vivero seleccionado = tablaViv.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) {
+            mostrarAlerta("Error", "Seleccione un vivero de la tabla para eliminarlo.", Alert.AlertType.ERROR);
+            return;
+        }
 
-            if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar el objeto Vivero seleccionado?")) return;
+        if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar el objeto Vivero seleccionado?")) return;
 
-            viveroService.eliminarVivero(existente);
+        if (viveroService.eliminarVivero(new Vivero(seleccionado.getViv_telefono(), "", ""))) {
             limpiarForm(null);
         }
     }
@@ -141,9 +139,9 @@ public class ViveroController {
         } else {
             if (validarParametroBusqueda()) {
                 Map<String, Object> atributos = new HashMap<>();
-                if ("Nombre".equals(crit)) atributos.put("viv_nombre", parametro.getText());
-                else if ("Teléfono".equals(crit)) atributos.put("viv_telefono", parametro.getText());
-                else if ("Dirección".equals(crit)) atributos.put("viv_direccion", parametro.getText());
+                if ("Nombre".equals(crit)) atributos.put("viv_nombre", parametro.getText().trim());
+                else if ("Teléfono".equals(crit)) atributos.put("viv_telefono", parametro.getText().trim());
+                else if ("Dirección".equals(crit)) atributos.put("viv_direccion", parametro.getText().trim());
                 resultados = viveroService.buscarPorAtributos(atributos);
             } else {
                 return;
@@ -173,6 +171,7 @@ public class ViveroController {
         direccionViv.clear();
         parametro.clear();
         criterio.getSelectionModel().clearSelection();
+        parametro.setDisable(true);
         tablaViv.getSelectionModel().clearSelection();
         tablaViv.getItems().clear();
     }

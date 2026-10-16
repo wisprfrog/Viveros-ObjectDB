@@ -1,6 +1,8 @@
 package org.viverobd.dao;
 
 import jakarta.persistence.EntityManager;
+import org.viverobd.models.Empleado;
+import org.viverobd.models.Zona;
 import org.viverobd.models.ZonaEmpleado;
 
 public class ZonaEmpleadoDAO extends GenericDAOImpl<ZonaEmpleado> {
@@ -22,8 +24,14 @@ public class ZonaEmpleadoDAO extends GenericDAOImpl<ZonaEmpleado> {
             zeAnterior.setZonae_fecha_asignacion(zeActualizado.getZonae_fecha_asignacion());
             zeAnterior.setZonae_fecha_salida(zeActualizado.getZonae_fecha_salida());
             zeAnterior.setZonae_hora_asignacion(zeActualizado.getZonae_hora_asignacion());
-            zeAnterior.formZonae_emp(zeActualizado.getZonae_emp());
-            zeAnterior.formZonae_zona(zeActualizado.getZonae_zona());
+            if (zeActualizado.getZonae_emp() != null) {
+                zeAnterior.formZonae_emp(em.find(Empleado.class,
+                        zeActualizado.getZonae_emp().getEmp_telefono()));
+            }
+            if (zeActualizado.getZonae_zona() != null) {
+                zeAnterior.formZonae_zona(em.find(Zona.class,
+                        zeActualizado.getZonae_zona().getZona_nombre()));
+            }
 
             em.getTransaction().commit();
             showOperationStatus(TipoOperacion.ACTUALIZAR, true);

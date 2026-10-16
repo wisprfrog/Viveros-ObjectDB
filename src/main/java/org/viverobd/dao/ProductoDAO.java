@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import org.viverobd.models.Planta;
 import org.viverobd.models.Producto;
 
-import javax.swing.*;
 
 public class ProductoDAO extends GenericDAOImpl<Producto>{
     public ProductoDAO(EntityManager em, Class<Producto> entityClass) {
@@ -41,6 +40,10 @@ public class ProductoDAO extends GenericDAOImpl<Producto>{
                     prodAnterior.formPro_planta(plantaActualizada);
                     plantaActualizada.formPla_prod(prodAnterior);
                 }
+            } else if (prodAnterior.getPro_planta() != null) {
+                // Cambiar una planta a otro tipo de producto elimina la
+                // entidad dependiente por orphanRemoval.
+                prodAnterior.dropPro_planta();
             }
 
             em.getTransaction().commit();

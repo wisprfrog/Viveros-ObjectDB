@@ -14,8 +14,8 @@ public class Vivero implements Serializable{
     private String viv_nombre;
     private String viv_direccion;
 
-    @OneToOne
-    @JoinColumn(name = "emp_viv", nullable = false)
+    @OneToOne(optional = true)
+    @JoinColumn(name = "emp_viv", nullable = true)
         private Empleado viv_emp;
 
     @OneToMany

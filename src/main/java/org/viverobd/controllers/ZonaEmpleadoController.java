@@ -42,6 +42,7 @@ public class ZonaEmpleadoController {
     private EmpleadoService empleadoService;
     private ZonaService zonaService;
     private List<Zona> listaZonas;
+    private String asignacionSeleccionada;
 
     @FXML
     void initialize() {
@@ -90,9 +91,15 @@ public class ZonaEmpleadoController {
         TableColumn<ZonaEmpleado, String> horaAsignacionZonET = new TableColumn<>("HORA DE ASIGNACIÓN");
         horaAsignacionZonET.setCellValueFactory(new PropertyValueFactory<>("zonae_hora_asignacion"));
 
-        tablaZonaE.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaZonaE.setEditable(false);
+        tablaZonaE.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaZonaE.getColumns().clear();
-        tablaZonaE.getColumns().addAll(codigoZonaET, nombreZonaT, telefonoEmpT, fechaAsigZonaET, fechaSalidaZonaET, horaAsignacionZonET);
+        tablaZonaE.getColumns().add(codigoZonaET);
+        tablaZonaE.getColumns().add(nombreZonaT);
+        tablaZonaE.getColumns().add(telefonoEmpT);
+        tablaZonaE.getColumns().add(fechaAsigZonaET);
+        tablaZonaE.getColumns().add(fechaSalidaZonaET);
+        tablaZonaE.getColumns().add(horaAsignacionZonET);
 
         tablaZonaE.setRowFactory(tv -> {
             TableRow<ZonaEmpleado> row = new TableRow<>();
@@ -128,6 +135,7 @@ public class ZonaEmpleadoController {
         if (ze == null) return;
 
         codigoZon.setText(ze.getZonae_codigo());
+        asignacionSeleccionada = ze.getZonae_codigo();
 
         if (ze.getZonae_zona() != null) {
             nomZona.setValue(ze.getZonae_zona().getZona_nombre());
@@ -159,51 +167,41 @@ public class ZonaEmpleadoController {
             ZonaEmpleado tempZE = construirZonaEmpleado();
             if (tempZE == null) return;
 
-            ZonaEmpleado existente = zonaEmpleadoService.buscarPorId(tempZE.getZonae_codigo());
-            if (existente != null) {
-                mostrarAlerta("Error", "Esta asignación ya existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
+            if (zonaEmpleadoService.agregarZonaEmpleado(tempZE)) {
+                limpiarForm(null);
             }
-
-            zonaEmpleadoService.agregarZonaEmpleado(tempZE);
-            limpiarForm(null);
         }
     }
 
     @FXML
     void modificarZonE(ActionEvent event) {
         if (camposCorrectos()) {
-            ZonaEmpleado tempZE = construirZonaEmpleado();
-            if (tempZE == null) return;
-
-            ZonaEmpleado existente = zonaEmpleadoService.buscarPorId(tempZE.getZonae_codigo());
-            if (existente == null) {
-                mostrarAlerta("Error", "La asignación no existe en la base de datos.", Alert.AlertType.ERROR);
+            if (asignacionSeleccionada == null) {
+                mostrarAlerta("Error", "Seleccione una asignación de la tabla para modificarla.", Alert.AlertType.ERROR);
                 return;
             }
+            ZonaEmpleado tempZE = construirZonaEmpleado();
+            if (tempZE == null) return;
+            tempZE.setZonae_codigo(asignacionSeleccionada);
 
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de actualizar la asignación seleccionada?")) return;
 
-            zonaEmpleadoService.modificarZonaEmpleado(tempZE);
-            limpiarForm(null);
+            if (zonaEmpleadoService.modificarZonaEmpleado(tempZE)) {
+                limpiarForm(null);
+            }
         }
     }
 
     @FXML
     void eliminarZonE(ActionEvent event) {
-        if (camposCorrectos()) {
-            ZonaEmpleado tempZE = construirZonaEmpleado();
-            if (tempZE == null) return;
+        if (asignacionSeleccionada == null) {
+            mostrarAlerta("Error", "Seleccione una asignación de la tabla para eliminarla.", Alert.AlertType.ERROR);
+            return;
+        }
 
-            ZonaEmpleado zeAEliminar = zonaEmpleadoService.buscarPorId(tempZE.getZonae_codigo());
-            if (zeAEliminar == null) {
-                mostrarAlerta("Error", "La asignación no existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
-            }
+        if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar la asignación seleccionada?")) return;
 
-            if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar la asignación seleccionada?")) return;
-
-            zonaEmpleadoService.eliminarZonaEmpleado(zeAEliminar);
+        if (zonaEmpleadoService.eliminarZonaEmpleado(new ZonaEmpleado(asignacionSeleccionada, null, null, null))) {
             limpiarForm(null);
         }
     }
@@ -219,11 +217,11 @@ public class ZonaEmpleadoController {
             if (validarParametroBusqueda(crit)) {
                 Map<String, Object> attrs = new HashMap<>();
                 if ("Código".equals(crit)) {
-                    attrs.put("zonae_codigo", parametro.getText());
+                    attrs.put("zonae_codigo", parametro.getText().trim());
                 } else if ("Nombre Zona".equals(crit)) {
-                    attrs.put("zonae_zona.zona_nombre", parametro.getText());
+                    attrs.put("zonae_zona.zona_nombre", parametro.getText().trim());
                 } else {
-                    attrs.put("zonae_emp.emp_telefono", parametro.getText());
+                    attrs.put("zonae_emp.emp_telefono", parametro.getText().trim());
                 }
                 resultados = zonaEmpleadoService.buscarPorAtributos(attrs);
             } else {
@@ -245,6 +243,8 @@ public class ZonaEmpleadoController {
         horaAsigZonE.clear();
         parametro.clear();
         criterio.getSelectionModel().clearSelection();
+        parametro.setDisable(true);
+        asignacionSeleccionada = null;
         tablaZonaE.getSelectionModel().clearSelection();
         tablaZonaE.getItems().clear();
     }
@@ -274,8 +274,20 @@ public class ZonaEmpleadoController {
             if (errorNode == null) errorNode = fechaAsigZonE;
         }
 
-        if (horaAsigZonE.getText().isEmpty()) {
+        if (horaAsigZonE.getText() == null || horaAsigZonE.getText().trim().isEmpty()) {
             errores.append("- La hora de asignación es obligatoria.\n");
+            if (errorNode == null) errorNode = horaAsigZonE;
+        }
+
+        if (fechaSalEmpE.getValue() != null && fechaAsigZonE.getValue() != null
+                && fechaSalEmpE.getValue().isBefore(fechaAsigZonE.getValue())) {
+            errores.append("- La fecha de salida no puede ser anterior a la fecha de asignación.\n");
+            if (errorNode == null) errorNode = fechaSalEmpE;
+        }
+
+        if (horaAsigZonE.getText() != null
+                && !horaAsigZonE.getText().trim().matches("([01]\\d|2[0-3]):[0-5]\\d")) {
+            errores.append("- La hora debe tener el formato HH:mm.\n");
             if (errorNode == null) errorNode = horaAsigZonE;
         }
 
@@ -301,7 +313,7 @@ public class ZonaEmpleadoController {
         }
 
         ZonaEmpleado ze = new ZonaEmpleado();
-        ze.setZonae_codigo(codigoZon.getText());
+        ze.setZonae_codigo(codigoZon.getText().trim());
         ze.formZonae_emp(emp);
         ze.formZonae_zona(zon);
 
@@ -311,7 +323,7 @@ public class ZonaEmpleadoController {
         if (fechaSalEmpE.getValue() != null) {
             ze.setZonae_fecha_salida(Timestamp.valueOf(fechaSalEmpE.getValue().atStartOfDay()));
         }
-        ze.setZonae_hora_asignacion(horaAsigZonE.getText());
+        ze.setZonae_hora_asignacion(horaAsigZonE.getText().trim());
 
         return ze;
     }

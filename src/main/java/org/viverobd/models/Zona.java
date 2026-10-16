@@ -4,7 +4,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.persistence.*;
 
@@ -40,12 +39,10 @@ public class Zona implements Serializable{
     @JoinColumn(name = "viv_zona", nullable = false)
         private Vivero zona_viv;
 
-    @OneToMany
-    @JoinColumn(name="zonap_zona", nullable = false)
-    private List<ZonaPlanta> zona_zonap = new ArrayList<>();
+        @OneToMany(mappedBy = "zonap_zona")
+        private List<ZonaPlanta> zona_zonap = new ArrayList<>();
 
-    @OneToMany
-    @JoinColumn(name="stock_zona", nullable = false)
+        @OneToMany(mappedBy = "stock_zona")
         private List<Stock> zona_stock = new ArrayList<>();
 
     public Zona() {}

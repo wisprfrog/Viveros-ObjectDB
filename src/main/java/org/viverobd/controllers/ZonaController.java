@@ -33,6 +33,7 @@ public class ZonaController {
     private static EntityManagerFactory emf;
     private ZonaService zonaService;
     private List<Vivero> listaViveros;
+    private String zonaSeleccionada;
 
     @FXML
     void initialize() {
@@ -58,9 +59,12 @@ public class ZonaController {
         TableColumn<Zona, String> colTipo = new TableColumn<>("TIPO");
         colTipo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getZona_tipo().nombre));
 
-        tablaZon.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tablaZon.setEditable(false);
+        tablaZon.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tablaZon.getColumns().clear();
-        tablaZon.getColumns().addAll(colNombre, colSuperficie, colTipo);
+        tablaZon.getColumns().add(colNombre);
+        tablaZon.getColumns().add(colSuperficie);
+        tablaZon.getColumns().add(colTipo);
 
         tablaZon.setRowFactory(tv -> {
             TableRow<Zona> row = new TableRow<>();
@@ -85,6 +89,7 @@ public class ZonaController {
 
     private void cargarZonaEnFormulario(Zona z) {
         if (z == null) return;
+        zonaSeleccionada = z.getZona_nombre();
         nombreZon.setText(z.getZona_nombre());
         telefonoZon.setText(String.valueOf(z.getZona_superficie()));
         tipoZon.setValue(z.getZona_tipo().nombre);
@@ -94,29 +99,28 @@ public class ZonaController {
     void agregarZon(ActionEvent event) {
         if (camposCorrectos()) {
             Zona tempZon = construirZona();
-            Zona existente = zonaService.buscarPorId(tempZon.getZona_nombre());
-            if (existente != null) {
-                mostrarAlerta("Error", "La zona ya existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
-            }
-
-            if (listaViveros.isEmpty()) {
+            if (listaViveros == null || listaViveros.isEmpty()) {
                 mostrarAlerta("Error", "No hay viveros disponibles para asignar a la zona.", Alert.AlertType.ERROR);
                 return;
             }
-            // Asignar el primer vivero por defecto si no hay selector en FXML
             tempZon.formZona_viv(listaViveros.get(0));
 
-            zonaService.agregarZona(tempZon);
-            limpiarForm(null);
+            if (zonaService.agregarZona(tempZon)) {
+                limpiarForm(null);
+            }
         }
     }
 
     @FXML
     void modificarZon(ActionEvent event) {
         if (camposCorrectos()) {
+            if (zonaSeleccionada == null) {
+                mostrarAlerta("Error", "Seleccione una zona de la tabla para modificarla.", Alert.AlertType.ERROR);
+                return;
+            }
             Zona tempZon = construirZona();
-            Zona existente = zonaService.buscarPorId(tempZon.getZona_nombre());
+            tempZon.setZona_nombre(zonaSeleccionada);
+            Zona existente = zonaService.buscarPorId(zonaSeleccionada);
             if (existente == null) {
                 mostrarAlerta("Error", "La zona no existe en la base de datos.", Alert.AlertType.ERROR);
                 return;
@@ -125,30 +129,23 @@ public class ZonaController {
             if (!mostrarConfirmacion("Confirmar actualización", "¿Está seguro de actualizar el objeto Zona seleccionado?")) return;
 
             tempZon.formZona_viv(existente.getZona_viv());
-            zonaService.modificarZona(tempZon);
-            limpiarForm(null);
+            if (zonaService.modificarZona(tempZon)) {
+                limpiarForm(null);
+            }
         }
     }
 
     @FXML
     void eliminarZon(ActionEvent event) {
-        if (camposCorrectos()) {
-            Zona tempZon = construirZona();
-            Zona zonaAEliminar = zonaService.buscarPorId(tempZon.getZona_nombre());
+        if (zonaSeleccionada == null) {
+            mostrarAlerta("Error", "Seleccione una zona de la tabla para eliminarla.", Alert.AlertType.ERROR);
+            return;
+        }
 
-            if (zonaAEliminar == null) {
-                mostrarAlerta("Error", "La zona no existe en la base de datos.", Alert.AlertType.ERROR);
-                return;
-            }
+        if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar el objeto Zona seleccionado?")) return;
 
-            if (!mostrarConfirmacion("Confirmar eliminación", "¿Está seguro de eliminar el objeto Zona seleccionado?")) return;
-
-            try {
-                zonaService.eliminarZona(zonaAEliminar);
+        if (zonaService.eliminarZona(new Zona(zonaSeleccionada, 0, null))) {
                 limpiarForm(null);
-            } catch (Exception e) {
-                mostrarAlerta("Error de Integridad", e.getMessage(), Alert.AlertType.ERROR);
-            }
         }
     }
 
@@ -163,15 +160,19 @@ public class ZonaController {
             if (validarParametroBusqueda(crit)) {
                 Map<String, Object> attrs = new HashMap<>();
                 if ("Nombre".equals(crit)) {
-                    attrs.put("zona_nombre", parametro.getText());
+                    attrs.put("zona_nombre", parametro.getText().trim());
                 } else if ("Superficie".equals(crit)) {
-                    attrs.put("zona_superficie", Float.parseFloat(parametro.getText()));
+                    attrs.put("zona_superficie", Float.parseFloat(parametro.getText().trim()));
                 } else if ("Tipo".equals(crit)) {
                     for (TipoZona t : TipoZona.values()) {
-                        if (t.nombre.equalsIgnoreCase(parametro.getText())) {
+                        if (t.nombre.equalsIgnoreCase(parametro.getText().trim())) {
                             attrs.put("zona_tipo", t);
                             break;
                         }
+                    }
+                    if (!attrs.containsKey("zona_tipo")) {
+                        mostrarErrorBusqueda("- El tipo de zona no es válido.", parametro);
+                        return;
                     }
                 }
                 resultados = zonaService.buscarPorAtributos(attrs);
@@ -190,6 +191,8 @@ public class ZonaController {
         tipoZon.getSelectionModel().clearSelection();
         parametro.clear();
         criterio.getSelectionModel().clearSelection();
+        parametro.setDisable(true);
+        zonaSeleccionada = null;
         tablaZon.getSelectionModel().clearSelection();
         tablaZon.getItems().clear();
     }
@@ -198,7 +201,7 @@ public class ZonaController {
         StringBuilder errores = new StringBuilder();
         Node errorNode = null;
 
-        if (nombreZon.getText().isEmpty()) {
+        if (nombreZon.getText() == null || nombreZon.getText().trim().isEmpty()) {
             errores.append("- El nombre de la zona es obligatorio.\n");
             if (errorNode == null) errorNode = nombreZon;
         }
@@ -208,8 +211,8 @@ public class ZonaController {
             if (errorNode == null) errorNode = telefonoZon;
         } else {
             try {
-                float sup = Float.parseFloat(telefonoZon.getText());
-                if (sup <= 0) {
+                float sup = Float.parseFloat(telefonoZon.getText().trim());
+                if (!Float.isFinite(sup) || sup <= 0) {
                     errores.append("- La superficie debe ser mayor a cero.\n");
                     if (errorNode == null) errorNode = telefonoZon;
                 }
@@ -233,8 +236,8 @@ public class ZonaController {
     }
 
     private Zona construirZona() {
-        String nombre = nombreZon.getText();
-        float superficie = Float.parseFloat(telefonoZon.getText());
+        String nombre = nombreZon.getText().trim();
+        float superficie = Float.parseFloat(telefonoZon.getText().trim());
         TipoZona tipo = null;
         for (TipoZona t : TipoZona.values()) {
             if (t.nombre.equals(tipoZon.getValue())) {

@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface StockService {
-    void agregarStock(Stock stock);
-    void modificarStock(Stock stock);
-    void eliminarStock(Stock stock);
+    boolean agregarStock(Stock stock);
+    boolean modificarStock(Stock stock);
+    boolean eliminarStock(Stock stock);
     Stock buscarPorId(int id);
     List<Stock> buscarStock(Map<String, Object> atributos);
     List<Stock> obtenerTodos();

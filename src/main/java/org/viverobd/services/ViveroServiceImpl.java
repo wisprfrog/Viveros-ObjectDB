@@ -2,8 +2,6 @@ package org.viverobd.services;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import org.viverobd.dao.GenericDAO;
-import org.viverobd.dao.GenericDAOImpl;
 import org.viverobd.dao.ViveroDAO;
 import org.viverobd.models.Vivero;
 import java.util.List;
@@ -17,49 +15,116 @@ public class ViveroServiceImpl implements ViveroService {
     }
 
     @Override
-    public void agregarVivero(Vivero vivero) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            ViveroDAO viveroDAO = new ViveroDAO(em, Vivero.class);
-            viveroDAO.create(vivero);
-        } finally {
-            em.close();
-        }
-    }
-
-    @Override
-    public void modificarVivero(Vivero vivero) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            ViveroDAO viveroDAO = new ViveroDAO(em, Vivero.class);
-            viveroDAO.update(vivero);
-        } finally {
-            em.close();
-        }
-    }
-
-    @Override
-    public void eliminarVivero(Vivero vivero) {
+    public boolean agregarVivero(Vivero vivero) {
         EntityManager em = emf.createEntityManager();
         ViveroDAO viveroDAO = new ViveroDAO(em, Vivero.class);
         try {
-            Vivero managedVivero = em.find(Vivero.class, vivero.getViv_telefono());
-            if (managedVivero != null) {
-                if (!managedVivero.getViv_zona().isEmpty()) {
-                    throw new RuntimeException("No se puede eliminar un vivero que tiene zonas asociadas.");
-                }
-                // Si tuviera empleado asociado y no pudiera borrarse, se añadiría aquí la lógica
+            if (vivero == null || !datosValidos(vivero)) {
+                viveroDAO.showOperationStatus(null, false, "Los datos del vivero no son válidos.");
+                return false;
             }
-            viveroDAO.delete(vivero);
+            if (em.find(Vivero.class, vivero.getViv_telefono()) != null) {
+                viveroDAO.showOperationStatus(null, false, "Ya existe un vivero con ese teléfono.");
+                return false;
+            }
+            em.getTransaction().begin();
+            em.persist(vivero);
+            em.getTransaction().commit();
+            return em.find(Vivero.class, vivero.getViv_telefono()) != null;
+        } catch (RuntimeException e) {
+            rollback(em);
+            viveroDAO.showOperationStatus(null, false, "No se pudo agregar el vivero: " + e.getMessage());
+            return false;
+        } finally {
+            em.close();
         }
-        catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
+    }
+
+    @Override
+    public boolean modificarVivero(Vivero vivero) {
+        EntityManager em = emf.createEntityManager();
+        ViveroDAO viveroDAO = new ViveroDAO(em, Vivero.class);
+        try {
+            if (vivero == null || !datosValidos(vivero)) {
+                viveroDAO.showOperationStatus(null, false, "Los datos del vivero no son válidos.");
+                return false;
             }
-            viveroDAO.showOperationStatus(GenericDAO.TipoOperacion.ELIMINAR, false, e.getMessage());
+            Vivero managed = em.find(Vivero.class, vivero.getViv_telefono());
+            if (managed == null) {
+                viveroDAO.showOperationStatus(null, false, "El vivero no existe en la base de datos.");
+                return false;
+            }
+            em.getTransaction().begin();
+            managed.setViv_nombre(vivero.getViv_nombre());
+            managed.setViv_direccion(vivero.getViv_direccion());
+            em.getTransaction().commit();
+            return true;
+        } catch (RuntimeException e) {
+            rollback(em);
+            viveroDAO.showOperationStatus(null, false, "No se pudo modificar el vivero: " + e.getMessage());
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public boolean eliminarVivero(Vivero vivero) {
+        EntityManager em = emf.createEntityManager();
+        ViveroDAO viveroDAO = new ViveroDAO(em, Vivero.class);
+        try {
+            if (vivero == null || vivero.getViv_telefono() == null
+                    || vivero.getViv_telefono().trim().isEmpty()) {
+                viveroDAO.showOperationStatus(null, false, "El teléfono del vivero es obligatorio.");
+                return false;
+            }
+            Vivero managedVivero = em.find(Vivero.class, vivero.getViv_telefono());
+            if (managedVivero == null) {
+                viveroDAO.showOperationStatus(null, false, "El vivero no existe en la base de datos.");
+                return false;
+            }
+            long zonas = em.createQuery(
+                            "SELECT COUNT(z) FROM Zona z WHERE z.zona_viv = :vivero", Long.class)
+                    .setParameter("vivero", managedVivero)
+                    .getSingleResult();
+            if (zonas > 0) {
+                viveroDAO.showOperationStatus(null, false, "No se puede eliminar un vivero que tiene zonas asociadas.");
+                return false;
+            }
+            long empleados = em.createQuery(
+                            "SELECT COUNT(e) FROM Empleado e WHERE e.emp_viv = :vivero", Long.class)
+                    .setParameter("vivero", managedVivero)
+                    .getSingleResult();
+            if (empleados > 0) {
+                viveroDAO.showOperationStatus(null, false, "No se puede eliminar un vivero que tiene un empleado asociado.");
+                return false;
+            }
+            em.getTransaction().begin();
+            em.remove(managedVivero);
+            em.getTransaction().commit();
+            return em.find(Vivero.class, vivero.getViv_telefono()) == null;
+        } catch (RuntimeException e) {
+            rollback(em);
+            viveroDAO.showOperationStatus(null, false, "No se pudo eliminar el vivero: " + e.getMessage());
+            return false;
         }
         finally {
             em.close();
+        }
+    }
+
+    private boolean datosValidos(Vivero vivero) {
+        return vivero.getViv_telefono() != null
+                && vivero.getViv_telefono().matches("\\d+")
+                && vivero.getViv_nombre() != null
+                && !vivero.getViv_nombre().trim().isEmpty()
+                && vivero.getViv_direccion() != null
+                && !vivero.getViv_direccion().trim().isEmpty();
+    }
+
+    private void rollback(EntityManager em) {
+        if (em.getTransaction().isActive()) {
+            em.getTransaction().rollback();
         }
     }
 
