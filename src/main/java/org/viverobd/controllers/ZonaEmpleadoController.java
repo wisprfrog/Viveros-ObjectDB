@@ -1,5 +1,6 @@
 package org.viverobd.controllers;
 
+import jakarta.persistence.EntityManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -13,6 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import org.viverobd.dao.PlantaDAO;
 import org.viverobd.models.Empleado;
 import org.viverobd.models.Zona;
 import org.viverobd.models.ZonaEmpleado;
@@ -29,15 +31,17 @@ public class ZonaEmpleadoController {
     @FXML private DatePicker fechaAsigZonE;
     @FXML private DatePicker fechaSalEmpE;
     @FXML private TextField horaAsigZonE;
-    @FXML private TextField nombreZon;
     @FXML private TextField parametro;
     @FXML private TableView<ZonaEmpleado> tablaZonaE;
-    @FXML private TextField telefonoEmp;
+    @FXML private ChoiceBox<String> nomZona;
+    @FXML private ChoiceBox<String> nomEmpleado;
+
 
     private static EntityManagerFactory emf;
     private ZonaEmpleadoService zonaEmpleadoService;
     private EmpleadoService empleadoService;
     private ZonaService zonaService;
+    private List<Zona> listaZonas;
 
     @FXML
     void initialize() {
@@ -49,6 +53,7 @@ public class ZonaEmpleadoController {
         zonaService = new ZonaServiceImpl(emf);
 
         configurarTabla();
+        cargarChoiceBoxes();
 
         criterio.getItems().addAll("Código", "Nombre Zona", "Teléfono Empleado");
         criterio.valueProperty().addListener(this::listenerCriterioBusqueda);
@@ -101,17 +106,35 @@ public class ZonaEmpleadoController {
         });
     }
 
+    private void cargarChoiceBoxes() {
+        // Zonas
+        listaZonas = zonaService.buscarTodas();
+        nomZona.getItems().clear();
+        for (Zona z : listaZonas) {
+            nomZona.getItems().add(z.getZona_nombre());
+        }
+
+        // Empleados
+        List<Empleado> listaEmpleados = empleadoService.obtenerTodos();
+        nomEmpleado.getItems().clear();
+        for (Empleado e : listaEmpleados) {
+            nomEmpleado.getItems().add(e.getEmp_telefono());
+        }
+    }
+
+
+
     private void cargarZonaEmpleadoEnFormulario(ZonaEmpleado ze) {
         if (ze == null) return;
 
         codigoZon.setText(ze.getZonae_codigo());
 
         if (ze.getZonae_zona() != null) {
-            nombreZon.setText(ze.getZonae_zona().getZona_nombre());
+            nomZona.setValue(ze.getZonae_zona().getZona_nombre());
         }
 
         if (ze.getZonae_emp() != null) {
-            telefonoEmp.setText(ze.getZonae_emp().getEmp_telefono());
+            nomEmpleado.setValue(ze.getZonae_emp().getEmp_telefono());
         }
 
         if (ze.getZonae_fecha_asignacion() != null) {
@@ -128,6 +151,7 @@ public class ZonaEmpleadoController {
 
         horaAsigZonE.setText(ze.getZonae_hora_asignacion());
     }
+
 
     @FXML
     void agregarZonE(ActionEvent event) {
@@ -213,8 +237,9 @@ public class ZonaEmpleadoController {
     @FXML
     void limpiarForm(ActionEvent event) {
         codigoZon.clear();
-        nombreZon.clear();
-        telefonoEmp.clear();
+        nomZona.setValue(null);
+        nomEmpleado.setValue(null);
+        nomEmpleado.getSelectionModel().clearSelection();
         fechaAsigZonE.setValue(null);
         fechaSalEmpE.setValue(null);
         horaAsigZonE.clear();
@@ -233,15 +258,16 @@ public class ZonaEmpleadoController {
             if (errorNode == null) errorNode = codigoZon;
         }
 
-        if (nombreZon.getText().isEmpty()) {
-            errores.append("- El nombre de la zona es obligatorio.\n");
-            if (errorNode == null) errorNode = nombreZon;
+        if (nomZona.getValue() == null || nomZona.getValue().trim().isEmpty()) {
+            errores.append("- Debe seleccionar una zona.\n");
+            if (errorNode == null) errorNode = nomZona;
         }
 
-        if (telefonoEmp.getText().isEmpty()) {
-            errores.append("- El teléfono del empleado es obligatorio.\n");
-            if (errorNode == null) errorNode = telefonoEmp;
+        if (nomEmpleado.getValue() == null || nomEmpleado.getValue().trim().isEmpty()) {
+            errores.append("- Debe seleccionar un empleado.\n");
+            if (errorNode == null) errorNode = nomEmpleado;
         }
+
 
         if (fechaAsigZonE.getValue() == null) {
             errores.append("- La fecha de asignación es obligatoria.\n");
@@ -262,8 +288,12 @@ public class ZonaEmpleadoController {
     }
 
     private ZonaEmpleado construirZonaEmpleado() {
-        Empleado emp = empleadoService.buscarPorTelefono(telefonoEmp.getText());
-        Zona zon = zonaService.buscarPorId(nombreZon.getText());
+
+        String telefonoSeleccionado = nomEmpleado.getValue();
+        Empleado emp = empleadoService.buscarPorTelefono(telefonoSeleccionado);
+
+        String zonaSeleccionada = nomZona.getValue();
+        Zona zon = zonaService.buscarPorId(zonaSeleccionada);
 
         if (emp == null || zon == null) {
             mostrarAlerta("Error", "Empleado o Zona no encontrados en la base de datos.", Alert.AlertType.ERROR);
@@ -274,6 +304,7 @@ public class ZonaEmpleadoController {
         ze.setZonae_codigo(codigoZon.getText());
         ze.formZonae_emp(emp);
         ze.formZonae_zona(zon);
+
         if (fechaAsigZonE.getValue() != null) {
             ze.setZonae_fecha_asignacion(Timestamp.valueOf(fechaAsigZonE.getValue().atStartOfDay()));
         }
@@ -284,6 +315,7 @@ public class ZonaEmpleadoController {
 
         return ze;
     }
+
 
     private boolean validarParametroBusqueda(String criterio) {
         String val = parametro.getText();
