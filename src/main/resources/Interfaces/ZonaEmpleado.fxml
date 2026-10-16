@@ -11,7 +11,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="750.0" prefWidth="1350.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.ZonaEmpleadoController">
+<AnchorPane prefHeight="750.0" prefWidth="1350.0" style="-fx-background-color: #E6EEC9;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.viverobd.controllers.ZonaEmpleadoController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#7da78c" height="98.0" layoutX="29.0" layoutY="24.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 30; -fx-arc-width: 30;" width="1292.0" />
       <Text fill="FLORALWHITE" layoutX="371.0" layoutY="94.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ASIGNACIÓN ZONA - EMPLEADO" textAlignment="CENTER">
@@ -25,21 +25,11 @@
             <Font name="Berlin Sans FB" size="26.0" />
          </font>
       </Text>
-      <TextField fx:id="telefonoEmp" layoutX="41.0" layoutY="348.0" prefHeight="49.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
-         <cursor>
-            <Cursor fx:constant="TEXT" />
-         </cursor>
-      </TextField>
       <Text layoutX="42.0" layoutY="331.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TELÉFONO EMPLEADO">
          <font>
             <Font name="Berlin Sans FB" size="26.0" />
          </font>
       </Text>
-      <TextField fx:id="nombreZon" layoutX="41.0" layoutY="261.0" prefHeight="41.0" prefWidth="321.0" style="-fx-background-color: #FFFAF0; -fx-background-radius: 10; -fx-border-color: #E7E1B1; -fx-border-radius: 10;">
-         <cursor>
-            <Cursor fx:constant="TEXT" />
-         </cursor>
-      </TextField>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#c4dbb657" height="504.0" layoutX="389.0" layoutY="222.0" stroke="TRANSPARENT" strokeType="INSIDE" style="-fx-arc-height: 20; -fx-arc-width: 20;" width="929.0" />
       <TableView fx:id="tablaZonaE" editable="true" layoutX="413.0" layoutY="238.0" prefHeight="480.0" prefWidth="642.0" style="-fx-background-radius: 20; -fx-border-radius: 20;" />
       <Button layoutX="1074.0" layoutY="242.0" mnemonicParsing="false" onAction="#agregarZonE" prefHeight="63.0" prefWidth="210.0" style="-fx-background-color: #FFFCD2; -fx-background-radius: 20;" text="AGREGAR">
@@ -139,5 +129,15 @@
             <Cursor fx:constant="HAND" />
          </cursor>
       </Button>
+      <ChoiceBox fx:id="nomZona" layoutX="41.0" layoutY="253.0" prefHeight="41.0" prefWidth="321.0" style="-fx-background-radius: 20; -fx-background-color: #FFFAF0; -fx-border-radius: 20;">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </ChoiceBox>
+      <ChoiceBox fx:id="nomEmpleado" layoutX="44.0" layoutY="347.0" prefHeight="41.0" prefWidth="321.0" style="-fx-background-radius: 20; -fx-background-color: #FFFAF0; -fx-border-radius: 20;">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </ChoiceBox>
    </children>
 </AnchorPane>
